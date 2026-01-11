@@ -38,49 +38,62 @@ class HomeView extends StatelessWidget {
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Phase Label
                       Obx(() => Text(
-                        timerController.currentPhaseLabel,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: _getPhaseColor(context, timerController),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      )),
-                      
+                            timerController.currentPhaseLabel,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  color:
+                                      _getPhaseColor(context, timerController),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          )),
+
                       const SizedBox(height: 40),
-                      
+
                       // Circular Timer
                       const CircularTimer(),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Pomodoro Counter
                       Obx(() => Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${timerController.completedPomodoros.value} Pomodoros completados',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      )),
-                      
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.7),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${timerController.completedPomodoros.value} Pomodoros completados',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.7),
+                                    ),
+                              ),
+                            ],
+                          )),
+
                       const SizedBox(height: 32),
-                      
+
                       // Task Selector
                       const TaskSelector(),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Timer Controls
                       const TimerControls(),
                     ],
@@ -91,7 +104,7 @@ class HomeView extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Obx(() {
+      bottomNavigationBar: Builder(builder: (context) {
         final currentIndex = _getCurrentIndex();
         return NavigationBar(
           selectedIndex: currentIndex,
