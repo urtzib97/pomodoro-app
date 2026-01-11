@@ -19,8 +19,8 @@ class DatabaseService extends GetxService {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'pomodoro.db');
-    
+    final String path = join(await getDatabasesPath(), 'pomodoro.db');
+
     return await openDatabase(
       path,
       version: 1,
@@ -158,13 +158,16 @@ class DatabaseService extends GetxService {
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
       SELECT COUNT(*) as count FROM pomodoro_sessions
       WHERE completed = 1 
       AND type = 'work'
       AND startTime >= ? 
       AND startTime <= ?
-    ''', [startOfDay.toIso8601String(), endOfDay.toIso8601String()]);
+    ''',
+      [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+    );
 
     return Sqflite.firstIntValue(result) ?? 0;
   }
@@ -179,12 +182,15 @@ class DatabaseService extends GetxService {
       startOfWeek.day,
     );
 
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
       SELECT COUNT(*) as count FROM pomodoro_sessions
       WHERE completed = 1 
       AND type = 'work'
       AND startTime >= ?
-    ''', [startOfWeekDay.toIso8601String()]);
+    ''',
+      [startOfWeekDay.toIso8601String()],
+    );
 
     return Sqflite.firstIntValue(result) ?? 0;
   }

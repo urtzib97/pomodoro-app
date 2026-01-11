@@ -22,39 +22,51 @@ class TasksView extends StatelessWidget {
             // Header with completed count
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Obx(() => Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Completadas hoy',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              child: Obx(
+                () => Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Completadas hoy',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
                             ),
-                          ),
-                          Text(
-                            '${taskController.todayCompletedCount}',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                            Text(
+                              '${taskController.todayCompletedCount}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              )),
+              ),
             ),
 
             // Task List
@@ -71,21 +83,32 @@ class TasksView extends StatelessWidget {
                         Icon(
                           Icons.task_outlined,
                           size: 64,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No hay tareas',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
+                                  ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Presiona + para agregar una tarea',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.4),
+                                  ),
                         ),
                       ],
                     ),
@@ -100,10 +123,14 @@ class TasksView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'ACTIVAS',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ),
                       ...activeTasks.map((task) => TaskItem(task: task)),
@@ -114,10 +141,14 @@ class TasksView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'COMPLETADAS',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ),
                       ...completedTasks.map((task) => TaskItem(task: task)),

@@ -21,34 +21,39 @@ class SettingsView extends StatelessWidget {
           Text(
             'APARIENCIA',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 12),
           Card(
-            child: Obx(() => Column(
-              children: [
-                RadioListTile<ThemeMode>(
-                  title: const Text('Claro'),
-                  value: ThemeMode.light,
-                  groupValue: settingsController.themeMode.value,
-                  onChanged: (value) => settingsController.setThemeMode(value!),
+            child: Obx(
+              () => RadioGroup<ThemeMode>(
+                groupValue: settingsController.themeMode.value,
+                onChanged: (ThemeMode? value) {
+                  if (value != null) settingsController.setThemeMode(value);
+                },
+                child: const Column(
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      title: Text('Claro'),
+                      value: ThemeMode.light,
+                    ),
+                    RadioListTile<ThemeMode>(
+                      title: Text('Oscuro'),
+                      value: ThemeMode.dark,
+                    ),
+                    RadioListTile<ThemeMode>(
+                      title: Text('Sistema'),
+                      value: ThemeMode.system,
+                    ),
+                  ],
                 ),
-                RadioListTile<ThemeMode>(
-                  title: const Text('Oscuro'),
-                  value: ThemeMode.dark,
-                  groupValue: settingsController.themeMode.value,
-                  onChanged: (value) => settingsController.setThemeMode(value!),
-                ),
-                RadioListTile<ThemeMode>(
-                  title: const Text('Sistema'),
-                  value: ThemeMode.system,
-                  groupValue: settingsController.themeMode.value,
-                  onChanged: (value) => settingsController.setThemeMode(value!),
-                ),
-              ],
-            )),
+              ),
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -57,9 +62,12 @@ class SettingsView extends StatelessWidget {
           Text(
             'DURACIONES',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 12),
           Card(
@@ -67,46 +75,61 @@ class SettingsView extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Obx(() => _buildSlider(
-                    context,
-                    label: 'Trabajo',
-                    value: settingsController.workDuration.value.toDouble(),
-                    min: 1,
-                    max: 60,
-                    divisions: 59,
-                    onChanged: (value) => settingsController.setWorkDuration(value.toInt()),
-                  )),
+                  Obx(
+                    () => _buildSlider(
+                      context,
+                      label: 'Trabajo',
+                      value: settingsController.workDuration.value.toDouble(),
+                      min: 1,
+                      max: 60,
+                      divisions: 59,
+                      onChanged: (value) =>
+                          settingsController.setWorkDuration(value.toInt()),
+                    ),
+                  ),
                   const Divider(),
-                  Obx(() => _buildSlider(
-                    context,
-                    label: 'Pausa corta',
-                    value: settingsController.shortBreakDuration.value.toDouble(),
-                    min: 1,
-                    max: 15,
-                    divisions: 14,
-                    onChanged: (value) => settingsController.setShortBreakDuration(value.toInt()),
-                  )),
+                  Obx(
+                    () => _buildSlider(
+                      context,
+                      label: 'Pausa corta',
+                      value: settingsController.shortBreakDuration.value
+                          .toDouble(),
+                      min: 1,
+                      max: 15,
+                      divisions: 14,
+                      onChanged: (value) => settingsController
+                          .setShortBreakDuration(value.toInt()),
+                    ),
+                  ),
                   const Divider(),
-                  Obx(() => _buildSlider(
-                    context,
-                    label: 'Pausa larga',
-                    value: settingsController.longBreakDuration.value.toDouble(),
-                    min: 10,
-                    max: 45,
-                    divisions: 35,
-                    onChanged: (value) => settingsController.setLongBreakDuration(value.toInt()),
-                  )),
+                  Obx(
+                    () => _buildSlider(
+                      context,
+                      label: 'Pausa larga',
+                      value:
+                          settingsController.longBreakDuration.value.toDouble(),
+                      min: 10,
+                      max: 45,
+                      divisions: 35,
+                      onChanged: (value) => settingsController
+                          .setLongBreakDuration(value.toInt()),
+                    ),
+                  ),
                   const Divider(),
-                  Obx(() => _buildSlider(
-                    context,
-                    label: 'Pomodoros antes de pausa larga',
-                    value: settingsController.pomodorosBeforeLongBreak.value.toDouble(),
-                    min: 2,
-                    max: 8,
-                    divisions: 6,
-                    onChanged: (value) => settingsController.setPomodorosBeforeLongBreak(value.toInt()),
-                    showMinutes: false,
-                  )),
+                  Obx(
+                    () => _buildSlider(
+                      context,
+                      label: 'Pomodoros antes de pausa larga',
+                      value: settingsController.pomodorosBeforeLongBreak.value
+                          .toDouble(),
+                      min: 2,
+                      max: 8,
+                      divisions: 6,
+                      onChanged: (value) => settingsController
+                          .setPomodorosBeforeLongBreak(value.toInt()),
+                      showMinutes: false,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -118,19 +141,24 @@ class SettingsView extends StatelessWidget {
           Text(
             'SONIDO Y NOTIFICACIONES',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 12),
           Card(
             child: Column(
               children: [
-                Obx(() => SwitchListTile(
-                  title: const Text('Sonido de notificación'),
-                  value: settingsController.soundEnabled.value,
-                  onChanged: (_) => settingsController.toggleSound(),
-                )),
+                Obx(
+                  () => SwitchListTile(
+                    title: const Text('Sonido de notificación'),
+                    value: settingsController.soundEnabled.value,
+                    onChanged: (_) => settingsController.toggleSound(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -141,34 +169,50 @@ class SettingsView extends StatelessWidget {
           Text(
             'COMPORTAMIENTO',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 12),
           Card(
             child: Column(
               children: [
-                Obx(() => SwitchListTile(
-                  title: const Text('Iniciar pausas automáticamente'),
-                  subtitle: const Text('Iniciar el temporizador de pausa al terminar trabajo'),
-                  value: settingsController.autoStartBreaks.value,
-                  onChanged: (_) => settingsController.toggleAutoStartBreaks(),
-                )),
+                Obx(
+                  () => SwitchListTile(
+                    title: const Text('Iniciar pausas automáticamente'),
+                    subtitle: const Text(
+                      'Iniciar el temporizador de pausa al terminar trabajo',
+                    ),
+                    value: settingsController.autoStartBreaks.value,
+                    onChanged: (_) =>
+                        settingsController.toggleAutoStartBreaks(),
+                  ),
+                ),
                 const Divider(height: 1),
-                Obx(() => SwitchListTile(
-                  title: const Text('Iniciar pomodoros automáticamente'),
-                  subtitle: const Text('Iniciar el temporizador al terminar pausa'),
-                  value: settingsController.autoStartPomodoros.value,
-                  onChanged: (_) => settingsController.toggleAutoStartPomodoros(),
-                )),
+                Obx(
+                  () => SwitchListTile(
+                    title: const Text('Iniciar pomodoros automáticamente'),
+                    subtitle:
+                        const Text('Iniciar el temporizador al terminar pausa'),
+                    value: settingsController.autoStartPomodoros.value,
+                    onChanged: (_) =>
+                        settingsController.toggleAutoStartPomodoros(),
+                  ),
+                ),
                 const Divider(height: 1),
-                Obx(() => SwitchListTile(
-                  title: const Text('Pantalla completa en pausas'),
-                  subtitle: const Text('Mostrar notificación a pantalla completa'),
-                  value: settingsController.fullscreenBreaks.value,
-                  onChanged: (_) => settingsController.toggleFullscreenBreaks(),
-                )),
+                Obx(
+                  () => SwitchListTile(
+                    title: const Text('Pantalla completa en pausas'),
+                    subtitle:
+                        const Text('Mostrar notificación a pantalla completa'),
+                    value: settingsController.fullscreenBreaks.value,
+                    onChanged: (_) =>
+                        settingsController.toggleFullscreenBreaks(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -218,9 +262,9 @@ class SettingsView extends StatelessWidget {
             Text(
               showMinutes ? '${value.toInt()} min' : '${value.toInt()}',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
             ),
           ],
         ),

@@ -7,8 +7,9 @@ import 'settings_controller.dart';
 import 'task_controller.dart';
 import 'stats_controller.dart';
 
-enum TimerState { idle, running, paused, break_time }
-enum BreakType { none, short_break, long_break }
+enum TimerState { idle, running, paused, breakTime }
+
+enum BreakType { none, shortBreak, longBreak }
 
 class TimerController extends GetxController {
   final DatabaseService _db = Get.find<DatabaseService>();
@@ -22,11 +23,12 @@ class TimerController extends GetxController {
   final totalSeconds = 0.obs;
   final completedPomodoros = 0.obs;
   final currentBreakType = BreakType.none.obs;
-  
+
   Timer? _timer;
   PomodoroSession? _currentSession;
 
-  int get currentCycle => completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value;
+  int get currentCycle =>
+      completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value;
 
   @override
   void onInit() {
@@ -48,7 +50,8 @@ class TimerController extends GetxController {
   void startTimer() {
     if (timerState.value == TimerState.running) return;
 
-    if (timerState.value == TimerState.idle || timerState.value == TimerState.break_time) {
+    if (timerState.value == TimerState.idle ||
+        timerState.value == TimerState.breakTime) {
       _startNewSession();
     }
 
@@ -58,7 +61,7 @@ class TimerController extends GetxController {
 
   void pauseTimer() {
     if (timerState.value != TimerState.running) return;
-    
+
     _timer?.cancel();
     timerState.value = TimerState.paused;
   }
@@ -67,24 +70,24 @@ class TimerController extends GetxController {
     _timer?.cancel();
     timerState.value = TimerState.idle;
     currentBreakType.value = BreakType.none;
-    
+
     totalSeconds.value = _settings.workDuration.value * 60;
     remainingSeconds.value = totalSeconds.value;
-    
+
     _currentSession = null;
   }
 
   void skipToBreak() {
-    if (timerState.value == TimerState.break_time) return;
-    
+    if (timerState.value == TimerState.breakTime) return;
+
     _timer?.cancel();
     _completeCurrentSession();
     _startBreak();
   }
 
   void skipBreak() {
-    if (timerState.value != TimerState.break_time) return;
-    
+    if (timerState.value != TimerState.breakTime) return;
+
     _timer?.cancel();
     _completeCurrentSession();
     resetTimer();
@@ -101,9 +104,9 @@ class TimerController extends GetxController {
   }
 
   void _startNewSession() {
-    final isBreak = timerState.value == TimerState.break_time;
+    final isBreak = timerState.value == TimerState.breakTime;
     final duration = isBreak
-        ? (currentBreakType.value == BreakType.long_break
+        ? (currentBreakType.value == BreakType.longBreak
             ? _settings.longBreakDuration.value
             : _settings.shortBreakDuration.value)
         : _settings.workDuration.value;
@@ -116,21 +119,23 @@ class TimerController extends GetxController {
       startTime: DateTime.now(),
       duration: duration,
       type: isBreak
-          ? (currentBreakType.value == BreakType.long_break ? 'long_break' : 'short_break')
+          ? (currentBreakType.value == BreakType.longBreak
+              ? 'longBreak'
+              : 'shortBreak')
           : 'work',
     );
   }
 
   Future<void> _onTimerComplete() async {
     _timer?.cancel();
-    
+
     await _completeCurrentSession();
 
-    if (timerState.value == TimerState.break_time) {
+    if (timerState.value == TimerState.breakTime) {
       // Break completed, return to idle
       currentBreakType.value = BreakType.none;
       timerState.value = TimerState.idle;
-      
+
       await NotificationService.showNotification(
         title: '¡Descanso completado!',
         body: '¿Listo para otro pomodoro?',
@@ -146,25 +151,25 @@ class TimerController extends GetxController {
     } else {
       // Work session completed
       completedPomodoros.value++;
-      
+
       if (_tasks.selectedTask.value != null) {
         await _tasks.incrementTaskPomodoro(_tasks.selectedTask.value!.id!);
       }
-      
+
       await _stats.refreshStats();
       _startBreak();
     }
   }
 
   void _startBreak() {
-    final shouldTakeLongBreak = 
-        completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value == 0;
-    
-    currentBreakType.value = shouldTakeLongBreak 
-        ? BreakType.long_break 
-        : BreakType.short_break;
-    
-    timerState.value = TimerState.break_time;
+    final shouldTakeLongBreak =
+        completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value ==
+            0;
+
+    currentBreakType.value =
+        shouldTakeLongBreak ? BreakType.longBreak : BreakType.shortBreak;
+
+    timerState.value = TimerState.breakTime;
 
     final breakDuration = shouldTakeLongBreak
         ? _settings.longBreakDuration.value
@@ -194,7 +199,7 @@ class TimerController extends GetxController {
         endTime: DateTime.now(),
         completed: true,
       );
-      
+
       await _db.insertSession(completedSession);
       _currentSession = null;
     }
@@ -212,8 +217,8 @@ class TimerController extends GetxController {
   }
 
   String get currentPhaseLabel {
-    if (timerState.value == TimerState.break_time) {
-      return currentBreakType.value == BreakType.long_break
+    if (timerState.value == TimerState.breakTime) {
+      return currentBreakType.value == BreakType.longBreak
           ? 'Descanso Largo'
           : 'Descanso Corto';
     }

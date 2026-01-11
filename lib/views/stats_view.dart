@@ -27,63 +27,69 @@ class StatsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Period Selector
-                  Obx(() => SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(
-                            value: 'today',
-                            label: Text('Hoy'),
-                            icon: Icon(Icons.today),
-                          ),
-                          ButtonSegment(
-                            value: 'week',
-                            label: Text('Semana'),
-                            icon: Icon(Icons.calendar_view_week),
-                          ),
-                        ],
-                        selected: {statsController.selectedPeriod.value},
-                        onSelectionChanged: (Set<String> selected) {
-                          statsController.setPeriod(selected.first);
-                        },
-                      )),
+                  Obx(
+                    () => SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'today',
+                          label: Text('Hoy'),
+                          icon: Icon(Icons.today),
+                        ),
+                        ButtonSegment(
+                          value: 'week',
+                          label: Text('Semana'),
+                          icon: Icon(Icons.calendar_view_week),
+                        ),
+                      ],
+                      selected: {statsController.selectedPeriod.value},
+                      onSelectionChanged: (Set<String> selected) {
+                        statsController.setPeriod(selected.first);
+                      },
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
 
                   // Summary Cards
-                  Obx(() => Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              context,
-                              title: 'Pomodoros',
-                              value: '${statsController.currentPomodoros}',
-                              icon: Icons.timer,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                  Obx(
+                    () => Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            context,
+                            title: 'Pomodoros',
+                            value: '${statsController.currentPomodoros}',
+                            icon: Icons.timer,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              context,
-                              title: 'Minutos',
-                              value: '${statsController.totalMinutes}',
-                              icon: Icons.access_time,
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            context,
+                            title: 'Minutos',
+                            value: '${statsController.totalMinutes}',
+                            icon: Icons.access_time,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
-                        ],
-                      )),
+                        ),
+                      ],
+                    ),
+                  ),
 
                   const SizedBox(height: 12),
 
-                  Obx(() => _buildStatCard(
-                        context,
-                        title: 'Tasa de completación',
-                        value:
-                            '${statsController.completionRate.toStringAsFixed(0)}%',
-                        icon: Icons.trending_up,
-                        color: Theme.of(context).colorScheme.tertiary,
-                        isFullWidth: true,
-                      )),
+                  Obx(
+                    () => _buildStatCard(
+                      context,
+                      title: 'Tasa de completación',
+                      value:
+                          '${statsController.completionRate.toStringAsFixed(0)}%',
+                      icon: Icons.trending_up,
+                      color: Theme.of(context).colorScheme.tertiary,
+                      isFullWidth: true,
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -136,7 +142,7 @@ class StatsView extends StatelessWidget {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -148,7 +154,7 @@ class StatsView extends StatelessWidget {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.5),
+                                            .withValues(alpha: 0.5),
                                       ),
                                 ),
                               ],
@@ -204,7 +210,7 @@ class StatsView extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.6),
+                            .withValues(alpha: 0.6),
                       ),
                 ),
               ],
@@ -250,8 +256,10 @@ class StatsView extends StatelessWidget {
                   width: 32,
                   height: height.clamp(20.0, 100.0),
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -262,7 +270,7 @@ class StatsView extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.6),
+                            .withValues(alpha: 0.6),
                       ),
                 ),
               ],
@@ -281,7 +289,7 @@ class StatsView extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor:
-              Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: Icon(
             Icons.check,
             color: Theme.of(context).colorScheme.primary,
@@ -297,7 +305,7 @@ class StatsView extends StatelessWidget {
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                     ),
               )
             : null,

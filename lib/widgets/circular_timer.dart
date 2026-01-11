@@ -12,13 +12,14 @@ class CircularTimer extends StatelessWidget {
 
     return Obx(() {
       final progress = timerController.progress;
-      final isBreak = timerController.timerState.value == TimerState.break_time;
-      
+      final isBreak = timerController.timerState.value == TimerState.breakTime;
+
       Color progressColor;
       if (isBreak) {
-        progressColor = timerController.currentBreakType.value == BreakType.long_break
-            ? Theme.of(context).colorScheme.tertiary
-            : Theme.of(context).colorScheme.secondary;
+        progressColor =
+            timerController.currentBreakType.value == BreakType.longBreak
+                ? Theme.of(context).colorScheme.tertiary
+                : Theme.of(context).colorScheme.secondary;
       } else {
         progressColor = Theme.of(context).colorScheme.primary;
       }
@@ -33,7 +34,10 @@ class CircularTimer extends StatelessWidget {
             CustomPaint(
               size: const Size(280, 280),
               painter: CircleBackgroundPainter(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.1),
               ),
             ),
             // Progress circle

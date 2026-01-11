@@ -32,7 +32,8 @@ class TaskItem extends StatelessWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Eliminar tarea'),
-            content: Text('¿Estás seguro de que quieres eliminar "${task.title}"?'),
+            content:
+                Text('¿Estás seguro de que quieres eliminar "${task.title}"?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -58,7 +59,8 @@ class TaskItem extends StatelessWidget {
       child: Card(
         margin: const EdgeInsets.only(bottom: 8.0),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           leading: Checkbox(
             value: task.isCompleted,
             onChanged: (_) => taskController.toggleTaskCompletion(task.id!),
@@ -71,7 +73,10 @@ class TaskItem extends StatelessWidget {
             style: TextStyle(
               decoration: task.isCompleted ? TextDecoration.lineThrough : null,
               color: task.isCompleted
-                  ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+                  ? Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5)
                   : Theme.of(context).colorScheme.onSurface,
             ),
           ),
@@ -84,13 +89,19 @@ class TaskItem extends StatelessWidget {
                   Icon(
                     Icons.timer_outlined,
                     size: 16,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.1),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${task.completedPomodoros}/${task.estimatedPomodoros} pomodoros',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -99,7 +110,10 @@ class TaskItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: task.completedPomodoros / task.estimatedPomodoros,
-                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.2),
                 ),
               ],
             ],

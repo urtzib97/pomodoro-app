@@ -76,9 +76,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   child: Text(
                     '${_estimatedPomodoros.round()}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                   ),
                 ),
               ],
@@ -87,8 +87,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             Text(
               'Aproximadamente ${(_estimatedPomodoros * 25).round()} minutos',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.1),
+                  ),
             ),
           ],
         ),

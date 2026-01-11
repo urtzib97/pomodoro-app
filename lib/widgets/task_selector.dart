@@ -22,7 +22,10 @@ class TaskSelector extends StatelessWidget {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -30,8 +33,11 @@ class TaskSelector extends StatelessWidget {
                   child: Text(
                     'No hay tareas activas',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.1),
+                        ),
                   ),
                 ),
               ],
@@ -49,8 +55,11 @@ class TaskSelector extends StatelessWidget {
               Text(
                 'Tarea actual',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
               ),
               const SizedBox(height: 8),
               DropdownButton<Task?>(
@@ -79,7 +88,10 @@ class TaskSelector extends StatelessWidget {
                             '${task.completedPomodoros}/${task.estimatedPomodoros}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -93,16 +105,23 @@ class TaskSelector extends StatelessWidget {
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: selectedTask.estimatedPomodoros > 0
-                      ? selectedTask.completedPomodoros / selectedTask.estimatedPomodoros
+                      ? selectedTask.completedPomodoros /
+                          selectedTask.estimatedPomodoros
                       : 0,
-                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.2),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${selectedTask.completedPomodoros} de ${selectedTask.estimatedPomodoros} pomodoros',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                      ),
                 ),
               ],
             ],

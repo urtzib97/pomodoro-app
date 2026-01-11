@@ -16,25 +16,25 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize database
   await Get.putAsync(() => DatabaseService().init());
-  
+
   // Initialize notification service
   await NotificationService.initialize();
-  
+
   // Initialize controllers
   Get.put(SettingsController());
   Get.put(TaskController());
   Get.put(StatsController());
   Get.put(TimerController());
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   runApp(const PomodoroApp());
 }
 
@@ -44,14 +44,16 @@ class PomodoroApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsController = Get.find<SettingsController>();
-    
-    return Obx(() => GetMaterialApp(
-      title: 'Pomodoro Timer',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: settingsController.themeMode.value,
-      home: const HomeView(),
-    ));
+
+    return Obx(
+      () => GetMaterialApp(
+        title: 'Pomodoro Timer',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: settingsController.themeMode.value,
+        home: const HomeView(),
+      ),
+    );
   }
 }

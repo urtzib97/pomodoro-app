@@ -33,12 +33,12 @@ class AppTheme {
       secondary: pauseShort,
       tertiary: pauseLong,
       surface: lightSurface,
-      background: lightBackground,
+
       error: error,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: lightTextPrimary,
-      onBackground: lightTextPrimary,
+
     ),
     textTheme: GoogleFonts.interTextTheme().apply(
       bodyColor: lightTextPrimary,
@@ -59,7 +59,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: lightTextSecondary.withOpacity(0.1)),
+        side: BorderSide(color: lightTextSecondary.withValues(alpha: 0.1)),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -93,12 +93,12 @@ class AppTheme {
       secondary: pauseShortDark,
       tertiary: pauseLongDark,
       surface: darkSurface,
-      background: darkBackground,
+
       error: error,
       onPrimary: darkBackground,
       onSecondary: darkBackground,
       onSurface: darkTextPrimary,
-      onBackground: darkTextPrimary,
+
     ),
     textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).apply(
       bodyColor: darkTextPrimary,
@@ -119,7 +119,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: darkTextSecondary.withOpacity(0.1)),
+        side: BorderSide(color: darkTextSecondary.withValues(alpha: 0.1)),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
