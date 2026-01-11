@@ -7,13 +7,13 @@ class AppTheme {
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightTextPrimary = Color(0xFF212121);
   static const Color lightTextSecondary = Color(0xFF757575);
-  
+
   // Dark Mode Colors
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color darkTextPrimary = Color(0xFFE0E0E0);
   static const Color darkTextSecondary = Color(0xFFBDBDBD);
-  
+
   // Accent Colors
   static const Color workActive = Color(0xFF4CAF50);
   static const Color workActiveDark = Color(0xFF66BB6A);
@@ -23,7 +23,7 @@ class AppTheme {
   static const Color pauseLongDark = Color(0xFFFFB74D);
   static const Color completed = Color(0xFF388E3C);
   static const Color error = Color(0xFFF44336);
-  
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -54,7 +54,7 @@ class AppTheme {
         fontWeight: FontWeight.w600,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: lightSurface,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -83,7 +83,7 @@ class AppTheme {
       color: lightTextPrimary,
     ),
   );
-  
+
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
@@ -114,7 +114,7 @@ class AppTheme {
         fontWeight: FontWeight.w600,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: darkSurface,
       elevation: 0,
       shape: RoundedRectangleBorder(

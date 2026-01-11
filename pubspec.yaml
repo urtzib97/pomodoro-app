@@ -25,7 +25,7 @@ dependencies:
   audioplayers: ^5.2.1
   
   # Notifications
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^19.5.0
   
   # Utils
   intl: ^0.18.1

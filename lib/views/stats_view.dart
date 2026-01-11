@@ -28,61 +28,62 @@ class StatsView extends StatelessWidget {
                 children: [
                   // Period Selector
                   Obx(() => SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(
-                        value: 'today',
-                        label: Text('Hoy'),
-                        icon: Icon(Icons.today),
-                      ),
-                      ButtonSegment(
-                        value: 'week',
-                        label: Text('Semana'),
-                        icon: Icon(Icons.calendar_week),
-                      ),
-                    ],
-                    selected: {statsController.selectedPeriod.value},
-                    onSelectionChanged: (Set<String> selected) {
-                      statsController.setPeriod(selected.first);
-                    },
-                  )),
+                        segments: const [
+                          ButtonSegment(
+                            value: 'today',
+                            label: Text('Hoy'),
+                            icon: Icon(Icons.today),
+                          ),
+                          ButtonSegment(
+                            value: 'week',
+                            label: Text('Semana'),
+                            icon: Icon(Icons.calendar_view_week),
+                          ),
+                        ],
+                        selected: {statsController.selectedPeriod.value},
+                        onSelectionChanged: (Set<String> selected) {
+                          statsController.setPeriod(selected.first);
+                        },
+                      )),
 
                   const SizedBox(height: 24),
 
                   // Summary Cards
                   Obx(() => Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          context,
-                          title: 'Pomodoros',
-                          value: '${statsController.currentPomodoros}',
-                          icon: Icons.timer,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          context,
-                          title: 'Minutos',
-                          value: '${statsController.totalMinutes}',
-                          icon: Icons.access_time,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ],
-                  )),
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              title: 'Pomodoros',
+                              value: '${statsController.currentPomodoros}',
+                              icon: Icons.timer,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              title: 'Minutos',
+                              value: '${statsController.totalMinutes}',
+                              icon: Icons.access_time,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ],
+                      )),
 
                   const SizedBox(height: 12),
 
                   Obx(() => _buildStatCard(
-                    context,
-                    title: 'Tasa de completación',
-                    value: '${statsController.completionRate.toStringAsFixed(0)}%',
-                    icon: Icons.trending_up,
-                    color: Theme.of(context).colorScheme.tertiary,
-                    isFullWidth: true,
-                  )),
+                        context,
+                        title: 'Tasa de completación',
+                        value:
+                            '${statsController.completionRate.toStringAsFixed(0)}%',
+                        icon: Icons.trending_up,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        isFullWidth: true,
+                      )),
 
                   const SizedBox(height: 24),
 
@@ -94,9 +95,12 @@ class StatsView extends StatelessWidget {
                         children: [
                           Text(
                             'Actividad semanal',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                           const SizedBox(height: 16),
                           _buildWeeklyChart(context, statsController),
@@ -111,14 +115,14 @@ class StatsView extends StatelessWidget {
                   Text(
                     'Historial',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: 12),
 
                   Obx(() {
                     final sessions = statsController.workSessions;
-                    
+
                     if (sessions.isEmpty) {
                       return Card(
                         child: Padding(
@@ -129,14 +133,23 @@ class StatsView extends StatelessWidget {
                                 Icon(
                                   Icons.history,
                                   size: 48,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.3),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
                                   'No hay sesiones registradas',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.5),
+                                      ),
                                 ),
                               ],
                             ),
@@ -146,7 +159,9 @@ class StatsView extends StatelessWidget {
                     }
 
                     return Column(
-                      children: sessions.map((session) => _buildSessionCard(context, session)).toList(),
+                      children: sessions
+                          .map((session) => _buildSessionCard(context, session))
+                          .toList(),
                     );
                   }),
 
@@ -172,18 +187,25 @@ class StatsView extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: isFullWidth ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          crossAxisAlignment: isFullWidth
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.center,
           children: [
             Row(
-              mainAxisAlignment: isFullWidth ? MainAxisAlignment.start : MainAxisAlignment.center,
+              mainAxisAlignment: isFullWidth
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.center,
               children: [
                 Icon(icon, color: color, size: 24),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.6),
+                      ),
                 ),
               ],
             ),
@@ -191,9 +213,9 @@ class StatsView extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
             ),
           ],
         ),
@@ -203,7 +225,9 @@ class StatsView extends StatelessWidget {
 
   Widget _buildWeeklyChart(BuildContext context, StatsController controller) {
     final breakdown = controller.dailyBreakdown;
-    final maxValue = breakdown.values.isEmpty ? 1 : breakdown.values.reduce((a, b) => a > b ? a : b);
+    final maxValue = breakdown.values.isEmpty
+        ? 1
+        : breakdown.values.reduce((a, b) => a > b ? a : b);
 
     return Card(
       child: Padding(
@@ -218,15 +242,16 @@ class StatsView extends StatelessWidget {
                 Text(
                   '${entry.value}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Container(
                   width: 32,
                   height: height.clamp(20.0, 100.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.8),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -234,8 +259,11 @@ class StatsView extends StatelessWidget {
                 Text(
                   entry.key,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.6),
+                      ),
                 ),
               ],
             );
@@ -247,12 +275,13 @@ class StatsView extends StatelessWidget {
 
   Widget _buildSessionCard(BuildContext context, PomodoroSession session) {
     final timeFormat = DateFormat('HH:mm');
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.2),
           child: Icon(
             Icons.check,
             color: Theme.of(context).colorScheme.primary,
@@ -265,8 +294,11 @@ class StatsView extends StatelessWidget {
             ? Text(
                 timeFormat.format(session.endTime!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.5),
+                    ),
               )
             : null,
       ),
