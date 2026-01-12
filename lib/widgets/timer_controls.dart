@@ -56,13 +56,13 @@ class TimerControls extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () => timerController.skipToBreak(),
                     icon: const Icon(Icons.skip_next, size: 20),
-                    label: const Text('Ir a pausa'),
+                    label: const Text('Saltar a descanso'),
                   ),
                 if (isBreak)
                   TextButton.icon(
                     onPressed: () => timerController.skipBreak(),
                     icon: const Icon(Icons.skip_next, size: 20),
-                    label: const Text('Saltar pausa'),
+                    label: const Text('Saltar descanso'),
                   ),
               ],
             ),

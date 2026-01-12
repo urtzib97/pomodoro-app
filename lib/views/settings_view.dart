@@ -213,6 +213,54 @@ class SettingsView extends StatelessWidget {
                         settingsController.toggleFullscreenBreaks(),
                   ),
                 ),
+                const Divider(height: 1),
+
+                // Task Completion Behavior
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Al completar una tarea:',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() => Column(
+                            children: [
+                              RadioListTile<String>(
+                                title: const Text('Siguiente tarea (Auto)'),
+                                value: 'auto',
+                                groupValue: settingsController
+                                    .taskCompletionBehavior.value,
+                                onChanged: (v) => settingsController
+                                    .setTaskCompletionBehavior(v!),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              RadioListTile<String>(
+                                title: const Text('Preguntar qué hacer'),
+                                value: 'ask',
+                                groupValue: settingsController
+                                    .taskCompletionBehavior.value,
+                                onChanged: (v) => settingsController
+                                    .setTaskCompletionBehavior(v!),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              RadioListTile<String>(
+                                title: const Text('Continuar sin tarea'),
+                                value: 'continue',
+                                groupValue: settingsController
+                                    .taskCompletionBehavior.value,
+                                onChanged: (v) => settingsController
+                                    .setTaskCompletionBehavior(v!),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ],
+                          )),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

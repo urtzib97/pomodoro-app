@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/timer_controller.dart';
+import '../controllers/task_controller.dart';
 
 import '../widgets/circular_timer.dart';
 import '../widgets/timer_controls.dart';
@@ -94,7 +95,38 @@ class HomeView extends StatelessWidget {
                       // Task Selector
                       const TaskSelector(),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
+
+                      // Finish Task Button
+                      Obx(() {
+                        if (timerController.timerState.value !=
+                                TimerState.breakTime &&
+                            Get.find<TaskController>().selectedTask.value !=
+                                null) {
+                          return TextButton.icon(
+                            onPressed: () {
+                              // Manual finish task
+                              // We can trigger the same logic as timer complete but force it?
+                              // Or just mark task as complete?
+                              // "manual complete + trigger behavior"
+                              // Let's call the controller method we added/will add?
+                              // Actually we need to add a method in timer_controller to handle "Manual Finish"
+                              // For now, let's implement the logic here or in controller.
+                              // Ideally controller.
+                              _finishTaskManually(context);
+                            },
+                            icon: const Icon(Icons.check),
+                            label: const Text('Terminar tarea actual'),
+                            style: TextButton.styleFrom(
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+
+                      const SizedBox(height: 16),
 
                       // Timer Controls
                       const TimerControls(),
@@ -138,10 +170,76 @@ class HomeView extends StatelessWidget {
   Color _getPhaseColor(BuildContext context, TimerController controller) {
     if (controller.timerState.value == TimerState.breakTime) {
       return controller.currentBreakType.value == BreakType.longBreak
-          ? Theme.of(context).colorScheme.tertiary
-          : Theme.of(context).colorScheme.secondary;
+          ? const Color(0xFFFF9800) // Orange
+          : const Color(0xFF2196F3); // Blue
     }
-    return Theme.of(context).colorScheme.primary;
+    return const Color(0xFF4CAF50); // Green
+  }
+
+  void _finishTaskManually(BuildContext context) {
+    final taskController = Get.find<TaskController>();
+    final timerController = Get.find<TimerController>();
+    final currentTask = taskController.selectedTask.value;
+
+    if (currentTask == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Terminar tarea?'),
+        content: Text(
+            '¿Seguro que quieres marcar "${currentTask.title}" como completada y terminar el pomodoro actual?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              // Mark task as complete
+              if (!currentTask.isCompleted) {
+                await taskController.toggleTaskCompletion(currentTask.id!);
+              }
+
+              // Trigger timer completion logic for transition
+              // We might need a specific method in timer controller to "Finish and Transition"
+              // reusing _onTimerComplete might double count the pomodoro if we are not careful?
+              // "Finish task" usually implies "I'm done with the task, even if timer isn't up OR timer is up"
+              // If we want to "trigger behavior", we should probably just treat it as "Session Complete" but specifically for Task.
+              // Let's skip the remaining time and trigger complete.
+
+              timerController.remainingSeconds.value =
+                  0; // Will trigger _runTimer callback? No, _runTimer checks periodically.
+              // We should manually call logic.
+              // But _onTimerComplete increments pomodoros. Do we want to count this fractional pomodoro?
+              // Usually "Finish task" means "I'm done".
+              // Let's assume we want to count it? Or maybe not?
+              // Requirement says "trigger behavior".
+              // I'll call a new method in TimerController: forceFinishSession()
+
+              // Wait, if I cannot edit TimerController right now (I can, but in parallel steps).
+              // I will add the method to timer_controller in the next step or assume it exists/add it now.
+              // I will implement the logic directly here for now to avoid back and forth, or better:
+              // Just use skipToBreak() but that doesn't mark task complete?
+              // I already marked task complete above.
+              // So if I call skipToBreak(), it will go to break.
+              // But `_onTimerComplete` logic handles "Task Complete" checks.
+              // If I already marked it complete, `_onTimerComplete` might re-trigger "Task Complete" dialog?
+              // `_onTimerComplete` checks `updatedTask.isCompleted`.
+              // If it is already completed, it might trigger logic.
+
+              // Let's just simply:
+              // 1. Mark task complete (done).
+              // 2. Skip to break.
+              timerController.skipToBreak();
+            },
+            child: const Text('Terminar'),
+          ),
+        ],
+      ),
+    );
   }
 
   int _getCurrentIndex() {

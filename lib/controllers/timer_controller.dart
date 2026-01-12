@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/pomodoro_session.dart';
 import '../services/database_service.dart';
@@ -142,6 +143,7 @@ class TimerController extends GetxController {
         playSound: _settings.soundEnabled.value,
       );
 
+      // Check if we should auto-start pomodoro
       if (_settings.autoStartPomodoros.value) {
         resetTimer();
         Future.delayed(const Duration(seconds: 2), () => startTimer());
@@ -152,13 +154,96 @@ class TimerController extends GetxController {
       // Work session completed
       completedPomodoros.value++;
 
-      if (_tasks.selectedTask.value != null) {
-        await _tasks.incrementTaskPomodoro(_tasks.selectedTask.value!.id!);
+      final currentTask = _tasks.selectedTask.value;
+      bool taskCompletedNow = false;
+
+      if (currentTask != null) {
+        // Increment pomodoros for the task
+        await _tasks.incrementTaskPomodoro(currentTask.id!);
+
+        // Refresh local task variable to check isCompleted status
+        final updatedTask =
+            _tasks.tasks.firstWhere((t) => t.id == currentTask.id);
+
+        if (updatedTask.isCompleted) {
+          taskCompletedNow = true;
+        }
       }
 
       await _stats.refreshStats();
-      _startBreak();
+
+      if (taskCompletedNow) {
+        await _handleTaskCompletion();
+      } else {
+        _startBreak();
+      }
     }
+  }
+
+  Future<void> _handleTaskCompletion() async {
+    final behavior = _settings.taskCompletionBehavior.value;
+
+    if (behavior == 'auto') {
+      // Select next available task
+      final nextTask =
+          _tasks.activeTasks.isNotEmpty ? _tasks.activeTasks.first : null;
+      if (nextTask != null) {
+        _tasks.selectTask(nextTask);
+        // Do not take a break, just continue? Or take a break then next task?
+        // "Next task auto" implies flow. Let's take the break first, but ensure next task is selected.
+        _startBreak();
+      } else {
+        // No more tasks, just break
+        _startBreak();
+      }
+    } else if (behavior == 'continue') {
+      // Continue with no task selected
+      _tasks.selectTask(null);
+      _startBreak();
+    } else {
+      // 'ask' - Show dialog
+      // We need to trigger a UI event. Since we are in controller,
+      // we can use Get.dialog
+      await _showTaskCompletedDialog();
+    }
+  }
+
+  Future<void> _showTaskCompletedDialog() async {
+    // Play sound first
+    await NotificationService.showNotification(
+      title: '¡Tarea completada!',
+      body: 'Has alcanzado el objetivo de pomodoros para esta tarea.',
+      playSound: _settings.soundEnabled.value,
+    );
+
+    // We pause/idle temporarily while dialog is shown?
+    // Actually, we are technically between work and break.
+
+    await Get.dialog(
+      AlertDialog(
+        title: const Text('¡Tarea completada!'),
+        content: const Text('¿Qué quieres hacer a continuación?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Just take a break, keep task selected (maybe add more time?)
+              Get.back();
+              _startBreak();
+            },
+            child: const Text('Solo descanso'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Get.back();
+              _tasks.selectTask(null);
+              _startBreak();
+            },
+            child: const Text('Terminar tarea'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void _startBreak() {

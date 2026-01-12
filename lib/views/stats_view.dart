@@ -85,6 +85,7 @@ class StatsView extends StatelessWidget {
                       title: 'Tasa de completación',
                       value:
                           '${statsController.completionRate.toStringAsFixed(0)}%',
+                      subtitle: statsController.completionRateFormula,
                       icon: Icons.trending_up,
                       color: Theme.of(context).colorScheme.tertiary,
                       isFullWidth: true,
@@ -185,6 +186,7 @@ class StatsView extends StatelessWidget {
     BuildContext context, {
     required String title,
     required String value,
+    String? subtitle,
     required IconData icon,
     required Color color,
     bool isFullWidth = false,
@@ -223,6 +225,18 @@ class StatsView extends StatelessWidget {
                     color: color,
                   ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
+                    ),
+              ),
+            ],
           ],
         ),
       ),
