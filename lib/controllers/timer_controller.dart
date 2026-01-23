@@ -28,6 +28,8 @@ class TimerController extends GetxController {
   Timer? _timer;
   PomodoroSession? _currentSession;
 
+  bool get isBreakPhase => currentBreakType.value != BreakType.none;
+
   int get currentCycle =>
       completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value;
 
@@ -132,7 +134,7 @@ class TimerController extends GetxController {
 
     await _completeCurrentSession();
 
-    if (timerState.value == TimerState.breakTime) {
+    if (isBreakPhase) {
       // Break completed, return to idle
       currentBreakType.value = BreakType.none;
       timerState.value = TimerState.idle;
@@ -302,7 +304,7 @@ class TimerController extends GetxController {
   }
 
   String get currentPhaseLabel {
-    if (timerState.value == TimerState.breakTime) {
+    if (isBreakPhase) {
       return currentBreakType.value == BreakType.longBreak
           ? 'Descanso Largo'
           : 'Descanso Corto';

@@ -99,8 +99,7 @@ class HomeView extends StatelessWidget {
 
                       // Finish Task Button
                       Obx(() {
-                        if (timerController.timerState.value !=
-                                TimerState.breakTime &&
+                        if (!timerController.isBreakPhase &&
                             Get.find<TaskController>().selectedTask.value !=
                                 null) {
                           return TextButton.icon(
@@ -168,7 +167,7 @@ class HomeView extends StatelessWidget {
   }
 
   Color _getPhaseColor(BuildContext context, TimerController controller) {
-    if (controller.timerState.value == TimerState.breakTime) {
+    if (controller.isBreakPhase) {
       return controller.currentBreakType.value == BreakType.longBreak
           ? const Color(0xFFFF9800) // Orange
           : const Color(0xFF2196F3); // Blue
