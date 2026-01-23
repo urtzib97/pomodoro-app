@@ -136,8 +136,8 @@ class TimerController extends GetxController {
 
     if (isBreakPhase) {
       // Break completed, return to idle
-      currentBreakType.value = BreakType.none;
-      timerState.value = TimerState.idle;
+      // Do not clear currentBreakType immediately, let resetTimer do it?
+      // Or clear it after delay? resetTimer clears it.
 
       await NotificationService.showNotification(
         title: '¡Descanso completado!',
@@ -270,13 +270,15 @@ class TimerController extends GetxController {
       playSound: _settings.soundEnabled.value,
     );
 
+    // Reset session immediately to update UI (Green -> Blue, 00:00 -> 05:00)
+    _startNewSession();
+
     if (_settings.autoStartBreaks.value) {
       Future.delayed(const Duration(seconds: 2), () {
+        // Refresh start time and start counting
         _startNewSession();
         startTimer();
       });
-    } else {
-      _startNewSession();
     }
   }
 

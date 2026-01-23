@@ -12,7 +12,7 @@ class TimerControls extends StatelessWidget {
     return Obx(() {
       final isRunning = timerController.timerState.value == TimerState.running;
       final isIdle = timerController.timerState.value == TimerState.idle;
-      final isBreak = timerController.timerState.value == TimerState.breakTime;
+      final isBreak = timerController.isBreakPhase;
 
       return Column(
         children: [

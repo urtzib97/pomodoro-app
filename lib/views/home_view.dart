@@ -41,15 +41,19 @@ class HomeView extends StatelessWidget {
 
                       // Phase Label
                       Obx(
-                        () => Text(
-                          timerController.currentPhaseLabel,
+                        () => AnimatedDefaultTextStyle(
                           style: Theme.of(context)
                               .textTheme
-                              .titleLarge
-                              ?.copyWith(
+                              .titleLarge!
+                              .copyWith(
                                 color: _getPhaseColor(context, timerController),
                                 fontWeight: FontWeight.w600,
                               ),
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                          child: Text(
+                            timerController.currentPhaseLabel,
+                          ),
                         ),
                       ),
 
