@@ -12,7 +12,7 @@ class CircularTimer extends StatelessWidget {
 
     return Obx(() {
       final progress = timerController.progress;
-      final isBreak = timerController.timerState.value == TimerState.breakTime;
+      final isBreak = timerController.isBreakPhase;
 
       Color progressColor;
       if (isBreak) {
