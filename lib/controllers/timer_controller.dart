@@ -89,7 +89,7 @@ class TimerController extends GetxController {
   }
 
   void skipBreak() {
-    if (timerState.value != TimerState.breakTime) return;
+    if (!isBreakPhase) return;
 
     _timer?.cancel();
     _completeCurrentSession();
