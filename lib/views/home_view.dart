@@ -30,8 +30,8 @@ class HomeView extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Builder(
-          builder: (context) {
+        child: LayoutBuilder(
+          builder: (context, constraints) {
             final mq = MediaQuery.of(context);
             final screenW = mq.size.width;
 
@@ -40,14 +40,16 @@ class HomeView extends StatelessWidget {
             final timerDiameter = base.clamp(230.0, 290.0);
 
             // Alto disponible (sin appbar + safe areas + bottom nav)
-            final availableH = mq.size.height -
-                mq.padding.top -
-                mq.padding.bottom -
-                kToolbarHeight -
-                kBottomNavigationBarHeight;
+            //final availableH = mq.size.height -
+            //    mq.padding.top -
+            //    mq.padding.bottom -
+            //    kToolbarHeight -
+            //    kBottomNavigationBarHeight;
 
             // Bloque superior fijo
-            final timerBlockHeight = availableH * 0.52;
+            final bodyH = constraints.maxHeight;
+            final timerBlockHeight = bodyH * 0.6;
+            //final timerBlockHeight = availableH * 0.52;
 
             return Column(
               children: [
@@ -57,6 +59,7 @@ class HomeView extends StatelessWidget {
                   width: double.infinity,
                   child: Column(
                     children: [
+                      const SizedBox(height: 8),
                       SizedBox(
                         height: 40,
                         child: Center(
@@ -169,7 +172,6 @@ class HomeView extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             const TimerControls(),
-                            const SizedBox(height: 24),
                           ],
                         ),
                       ),
