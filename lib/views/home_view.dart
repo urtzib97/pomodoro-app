@@ -69,7 +69,9 @@ class HomeView extends StatelessWidget {
                                   .titleLarge!
                                   .copyWith(
                                     color: _getPhaseColor(
-                                        context, timerController),
+                                      context,
+                                      timerController,
+                                    ),
                                     fontWeight: FontWeight.w600,
                                   ),
                               duration: const Duration(milliseconds: 500),

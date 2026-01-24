@@ -37,7 +37,7 @@ class TimerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initializeTimer();
+    initializeTimer();
   }
 
   @override
@@ -46,7 +46,7 @@ class TimerController extends GetxController {
     super.onClose();
   }
 
-  void _initializeTimer() {
+  void initializeTimer() {
     totalSeconds = _settings.workDuration * 60;
     remainingSeconds = totalSeconds;
     update([UiIds.ID_TIMER_TEXT, UiIds.ID_TIMER_PROGRESS]);

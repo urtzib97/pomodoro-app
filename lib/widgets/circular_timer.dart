@@ -80,7 +80,7 @@ class CircularTimer extends StatelessWidget {
                               fontWeight: FontWeight.w400,
                               letterSpacing: -2,
                               fontFeatures: [
-                                const FontFeature.tabularFigures()
+                                const FontFeature.tabularFigures(),
                               ],
                             ),
                           ),

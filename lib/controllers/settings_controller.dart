@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/ui_ids.dart';
+import 'timer_controller.dart';
 
 class SettingsController extends GetxController {
   // Theme
@@ -66,6 +67,16 @@ class SettingsController extends GetxController {
     taskCompletionBehavior = prefs.getString('taskCompletionBehavior') ?? 'ask';
 
     update(); // Update all IDs
+
+    // Refresh timer to show correct duration
+    try {
+      final timerController = Get.find<TimerController>();
+      if (timerController.timerState == TimerState.idle) {
+        timerController.initializeTimer();
+      }
+    } catch (e) {
+      // TimerController might not be initialized yet, ignore
+    }
   }
 
   Future<void> saveSettings() async {
