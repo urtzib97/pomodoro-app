@@ -71,19 +71,25 @@ class SettingsController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString(
-        'themeMode', themeMode.value.toString().split('.').last);
+      'themeMode',
+      themeMode.value.toString().split('.').last,
+    );
     await prefs.setInt('workDuration', workDuration.value);
     await prefs.setInt('shortBreakDuration', shortBreakDuration.value);
     await prefs.setInt('longBreakDuration', longBreakDuration.value);
     await prefs.setInt(
-        'pomodorosBeforeLongBreak', pomodorosBeforeLongBreak.value);
+      'pomodorosBeforeLongBreak',
+      pomodorosBeforeLongBreak.value,
+    );
     await prefs.setBool('soundEnabled', soundEnabled.value);
     await prefs.setString('selectedSound', selectedSound.value);
     await prefs.setBool('fullscreenBreaks', fullscreenBreaks.value);
     await prefs.setBool('autoStartBreaks', autoStartBreaks.value);
     await prefs.setBool('autoStartPomodoros', autoStartPomodoros.value);
     await prefs.setString(
-        'taskCompletionBehavior', taskCompletionBehavior.value);
+      'taskCompletionBehavior',
+      taskCompletionBehavior.value,
+    );
   }
 
   void setThemeMode(ThemeMode mode) {

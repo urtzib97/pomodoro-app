@@ -218,7 +218,9 @@ class SettingsView extends StatelessWidget {
                 // Task Completion Behavior
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -227,37 +229,36 @@ class SettingsView extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
-                      Obx(() => Column(
+                      Obx(
+                        () => RadioGroup<String>(
+                          groupValue:
+                              settingsController.taskCompletionBehavior.value,
+                          onChanged: (v) {
+                            if (v != null) {
+                              settingsController.setTaskCompletionBehavior(v);
+                            }
+                          },
+                          child: const Column(
                             children: [
                               RadioListTile<String>(
-                                title: const Text('Siguiente tarea (Auto)'),
+                                title: Text('Siguiente tarea (Auto)'),
                                 value: 'auto',
-                                groupValue: settingsController
-                                    .taskCompletionBehavior.value,
-                                onChanged: (v) => settingsController
-                                    .setTaskCompletionBehavior(v!),
                                 contentPadding: EdgeInsets.zero,
                               ),
                               RadioListTile<String>(
-                                title: const Text('Preguntar qué hacer'),
+                                title: Text('Preguntar qué hacer'),
                                 value: 'ask',
-                                groupValue: settingsController
-                                    .taskCompletionBehavior.value,
-                                onChanged: (v) => settingsController
-                                    .setTaskCompletionBehavior(v!),
                                 contentPadding: EdgeInsets.zero,
                               ),
                               RadioListTile<String>(
-                                title: const Text('Continuar sin tarea'),
+                                title: Text('Continuar sin tarea'),
                                 value: 'continue',
-                                groupValue: settingsController
-                                    .taskCompletionBehavior.value,
-                                onChanged: (v) => settingsController
-                                    .setTaskCompletionBehavior(v!),
                                 contentPadding: EdgeInsets.zero,
                               ),
                             ],
-                          )),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

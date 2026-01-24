@@ -191,7 +191,8 @@ class HomeView extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('¿Terminar tarea?'),
         content: Text(
-            '¿Seguro que quieres marcar "${currentTask.title}" como completada y terminar el pomodoro actual?'),
+          '¿Seguro que quieres marcar "${currentTask.title}" como completada y terminar el pomodoro actual?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

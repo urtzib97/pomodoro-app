@@ -135,7 +135,9 @@ class TaskItem extends StatelessWidget {
   }
 
   void _showOptionsBottomSheet(
-      BuildContext context, TaskController taskController) {
+    BuildContext context,
+    TaskController taskController,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
