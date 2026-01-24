@@ -1,74 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/timer_controller.dart';
+import '../core/ui_ids.dart';
 
 class TimerControls extends StatelessWidget {
   const TimerControls({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final timerController = Get.find<TimerController>();
+    return GetBuilder<TimerController>(
+      id: UiIds.ID_TIMER_CONTROLS,
+      builder: (timerController) {
+        final isRunning = timerController.timerState == TimerState.running;
+        final isIdle = timerController.timerState == TimerState.idle;
+        final isBreak = timerController.isBreakPhase;
 
-    return Obx(() {
-      final isRunning = timerController.timerState.value == TimerState.running;
-      final isIdle = timerController.timerState.value == TimerState.idle;
-      final isBreak = timerController.isBreakPhase;
-
-      return Column(
-        children: [
-          // Main control buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Start/Pause button
-              _buildMainButton(
-                context,
-                onPressed: isRunning
-                    ? () => timerController.pauseTimer()
-                    : () => timerController.startTimer(),
-                icon: isRunning ? Icons.pause : Icons.play_arrow,
-                label: isRunning ? 'Pausar' : 'Iniciar',
-                isPrimary: true,
-              ),
-
-              const SizedBox(width: 16),
-
-              // Reset button
-              if (!isIdle)
-                _buildMainButton(
-                  context,
-                  onPressed: () => _showResetDialog(context, timerController),
-                  icon: Icons.refresh,
-                  label: 'Reiniciar',
-                  isPrimary: false,
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Skip buttons
-          if (!isIdle)
+        return Column(
+          children: [
+            // Main control buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (!isBreak)
-                  TextButton.icon(
-                    onPressed: () => timerController.skipToBreak(),
-                    icon: const Icon(Icons.skip_next, size: 20),
-                    label: const Text('Saltar a descanso'),
-                  ),
-                if (isBreak)
-                  TextButton.icon(
-                    onPressed: () => timerController.skipBreak(),
-                    icon: const Icon(Icons.skip_next, size: 20),
-                    label: const Text('Saltar descanso'),
+                // Start/Pause button
+                _buildMainButton(
+                  context,
+                  onPressed: isRunning
+                      ? () => timerController.pauseTimer()
+                      : () => timerController.startTimer(),
+                  icon: isRunning ? Icons.pause : Icons.play_arrow,
+                  label: isRunning ? 'Pausar' : 'Iniciar',
+                  isPrimary: true,
+                ),
+
+                const SizedBox(width: 16),
+
+                // Reset button
+                if (!isIdle)
+                  _buildMainButton(
+                    context,
+                    onPressed: () => _showResetDialog(context, timerController),
+                    icon: Icons.refresh,
+                    label: 'Reiniciar',
+                    isPrimary: false,
                   ),
               ],
             ),
-        ],
-      );
-    });
+
+            const SizedBox(height: 16),
+
+            // Skip buttons
+            if (!isIdle)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (!isBreak)
+                    TextButton.icon(
+                      onPressed: () => timerController.skipToBreak(),
+                      icon: const Icon(Icons.skip_next, size: 20),
+                      label: const Text('Saltar a descanso'),
+                    ),
+                  if (isBreak)
+                    TextButton.icon(
+                      onPressed: () => timerController.skipBreak(),
+                      icon: const Icon(Icons.skip_next, size: 20),
+                      label: const Text('Saltar descanso'),
+                    ),
+                ],
+              ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildMainButton(

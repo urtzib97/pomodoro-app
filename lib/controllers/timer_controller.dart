@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../core/ui_ids.dart';
 import '../models/pomodoro_session.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
@@ -18,20 +19,20 @@ class TimerController extends GetxController {
   final TaskController _tasks = Get.find<TaskController>();
   final StatsController _stats = Get.find<StatsController>();
 
-  // Observable state
-  final timerState = TimerState.idle.obs;
-  final remainingSeconds = 0.obs;
-  final totalSeconds = 0.obs;
-  final completedPomodoros = 0.obs;
-  final currentBreakType = BreakType.none.obs;
+  // State
+  TimerState timerState = TimerState.idle;
+  int remainingSeconds = 0;
+  int totalSeconds = 0;
+  int completedPomodoros = 0;
+  BreakType currentBreakType = BreakType.none;
 
   Timer? _timer;
   PomodoroSession? _currentSession;
 
-  bool get isBreakPhase => currentBreakType.value != BreakType.none;
+  bool get isBreakPhase => currentBreakType != BreakType.none;
 
   int get currentCycle =>
-      completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value;
+      completedPomodoros % _settings.pomodorosBeforeLongBreak;
 
   @override
   void onInit() {
@@ -46,42 +47,51 @@ class TimerController extends GetxController {
   }
 
   void _initializeTimer() {
-    totalSeconds.value = _settings.workDuration.value * 60;
-    remainingSeconds.value = totalSeconds.value;
+    totalSeconds = _settings.workDuration * 60;
+    remainingSeconds = totalSeconds;
+    update([UiIds.ID_TIMER_TEXT, UiIds.ID_TIMER_PROGRESS]);
   }
 
   void startTimer() {
-    if (timerState.value == TimerState.running) return;
+    if (timerState == TimerState.running) return;
 
-    if (timerState.value == TimerState.idle ||
-        timerState.value == TimerState.breakTime) {
+    if (timerState == TimerState.idle || timerState == TimerState.breakTime) {
       _startNewSession();
     }
 
-    timerState.value = TimerState.running;
+    timerState = TimerState.running;
+    update([UiIds.ID_TIMER_CONTROLS]);
     _runTimer();
   }
 
   void pauseTimer() {
-    if (timerState.value != TimerState.running) return;
+    if (timerState != TimerState.running) return;
 
     _timer?.cancel();
-    timerState.value = TimerState.paused;
+    timerState = TimerState.paused;
+    update([UiIds.ID_TIMER_CONTROLS]);
   }
 
   void resetTimer() {
     _timer?.cancel();
-    timerState.value = TimerState.idle;
-    currentBreakType.value = BreakType.none;
+    timerState = TimerState.idle;
+    currentBreakType = BreakType.none;
 
-    totalSeconds.value = _settings.workDuration.value * 60;
-    remainingSeconds.value = totalSeconds.value;
+    totalSeconds = _settings.workDuration * 60;
+    remainingSeconds = totalSeconds;
 
     _currentSession = null;
+
+    update([
+      UiIds.ID_TIMER_TEXT,
+      UiIds.ID_TIMER_PROGRESS,
+      UiIds.ID_TIMER_CONTROLS,
+      UiIds.ID_SESSION_INFO,
+    ]);
   }
 
   void skipToBreak() {
-    if (timerState.value == TimerState.breakTime) return;
+    if (timerState == TimerState.breakTime) return;
 
     _timer?.cancel();
     _completeCurrentSession();
@@ -98,8 +108,10 @@ class TimerController extends GetxController {
 
   void _runTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (remainingSeconds.value > 0) {
-        remainingSeconds.value--;
+      if (remainingSeconds > 0) {
+        remainingSeconds--;
+        // Optimized update: only timer text and progress
+        update([UiIds.ID_TIMER_TEXT, UiIds.ID_TIMER_PROGRESS]);
       } else {
         _onTimerComplete();
       }
@@ -107,25 +119,30 @@ class TimerController extends GetxController {
   }
 
   void _startNewSession() {
-    final isBreak = timerState.value == TimerState.breakTime;
+    final isBreak = timerState == TimerState.breakTime;
     final duration = isBreak
-        ? (currentBreakType.value == BreakType.longBreak
-            ? _settings.longBreakDuration.value
-            : _settings.shortBreakDuration.value)
-        : _settings.workDuration.value;
+        ? (currentBreakType == BreakType.longBreak
+            ? _settings.longBreakDuration
+            : _settings.shortBreakDuration)
+        : _settings.workDuration;
 
-    totalSeconds.value = duration * 60;
-    remainingSeconds.value = totalSeconds.value;
+    totalSeconds = duration * 60;
+    remainingSeconds = totalSeconds;
 
     _currentSession = PomodoroSession(
-      taskId: _tasks.selectedTask.value?.id,
+      taskId: _tasks.selectedTask?.id,
       startTime: DateTime.now(),
       duration: duration,
       type: isBreak
-          ? (currentBreakType.value == BreakType.longBreak
+          ? (currentBreakType == BreakType.longBreak
               ? 'longBreak'
               : 'shortBreak')
           : 'work',
+    );
+
+    // Update all relevant UI
+    update(
+      [UiIds.ID_TIMER_TEXT, UiIds.ID_TIMER_PROGRESS, UiIds.ID_SESSION_INFO],
     );
   }
 
@@ -135,18 +152,14 @@ class TimerController extends GetxController {
     await _completeCurrentSession();
 
     if (isBreakPhase) {
-      // Break completed, return to idle
-      // Do not clear currentBreakType immediately, let resetTimer do it?
-      // Or clear it after delay? resetTimer clears it.
-
       await NotificationService.showNotification(
         title: '¡Descanso completado!',
         body: '¿Listo para otro pomodoro?',
-        playSound: _settings.soundEnabled.value,
+        playSound: _settings.soundEnabled,
       );
 
       // Check if we should auto-start pomodoro
-      if (_settings.autoStartPomodoros.value) {
+      if (_settings.autoStartPomodoros) {
         resetTimer();
         Future.delayed(const Duration(seconds: 2), () => startTimer());
       } else {
@@ -154,9 +167,10 @@ class TimerController extends GetxController {
       }
     } else {
       // Work session completed
-      completedPomodoros.value++;
+      completedPomodoros++;
+      update([UiIds.ID_SESSION_INFO]);
 
-      final currentTask = _tasks.selectedTask.value;
+      final currentTask = _tasks.selectedTask;
       bool taskCompletedNow = false;
 
       if (currentTask != null) {
@@ -183,43 +197,31 @@ class TimerController extends GetxController {
   }
 
   Future<void> _handleTaskCompletion() async {
-    final behavior = _settings.taskCompletionBehavior.value;
+    final behavior = _settings.taskCompletionBehavior;
 
     if (behavior == 'auto') {
-      // Select next available task
       final nextTask =
           _tasks.activeTasks.isNotEmpty ? _tasks.activeTasks.first : null;
       if (nextTask != null) {
         _tasks.selectTask(nextTask);
-        // Do not take a break, just continue? Or take a break then next task?
-        // "Next task auto" implies flow. Let's take the break first, but ensure next task is selected.
         _startBreak();
       } else {
-        // No more tasks, just break
         _startBreak();
       }
     } else if (behavior == 'continue') {
-      // Continue with no task selected
       _tasks.selectTask(null);
       _startBreak();
     } else {
-      // 'ask' - Show dialog
-      // We need to trigger a UI event. Since we are in controller,
-      // we can use Get.dialog
       await _showTaskCompletedDialog();
     }
   }
 
   Future<void> _showTaskCompletedDialog() async {
-    // Play sound first
     await NotificationService.showNotification(
       title: '¡Tarea completada!',
       body: 'Has alcanzado el objetivo de pomodoros para esta tarea.',
-      playSound: _settings.soundEnabled.value,
+      playSound: _settings.soundEnabled,
     );
-
-    // We pause/idle temporarily while dialog is shown?
-    // Actually, we are technically between work and break.
 
     await Get.dialog(
       AlertDialog(
@@ -228,7 +230,6 @@ class TimerController extends GetxController {
         actions: [
           TextButton(
             onPressed: () {
-              // Just take a break, keep task selected (maybe add more time?)
               Get.back();
               _startBreak();
             },
@@ -250,32 +251,35 @@ class TimerController extends GetxController {
 
   void _startBreak() {
     final shouldTakeLongBreak =
-        completedPomodoros.value % _settings.pomodorosBeforeLongBreak.value ==
-            0;
+        completedPomodoros % _settings.pomodorosBeforeLongBreak == 0;
 
-    currentBreakType.value =
+    currentBreakType =
         shouldTakeLongBreak ? BreakType.longBreak : BreakType.shortBreak;
 
-    timerState.value = TimerState.breakTime;
+    timerState = TimerState.breakTime;
 
     final breakDuration = shouldTakeLongBreak
-        ? _settings.longBreakDuration.value
-        : _settings.shortBreakDuration.value;
+        ? _settings.longBreakDuration
+        : _settings.shortBreakDuration;
 
     NotificationService.showNotification(
       title: '¡Pomodoro completado!',
       body: shouldTakeLongBreak
           ? '¡Excelente trabajo! Toma un descanso largo de $breakDuration minutos.'
           : 'Toma un descanso corto de $breakDuration minutos.',
-      playSound: _settings.soundEnabled.value,
+      playSound: _settings.soundEnabled,
     );
 
-    // Reset session immediately to update UI (Green -> Blue, 00:00 -> 05:00)
     _startNewSession();
+    update([
+      UiIds.ID_TIMER_CONTROLS,
+      UiIds.ID_SESSION_INFO,
+      UiIds.ID_TIMER_TEXT,
+      UiIds.ID_TIMER_PROGRESS,
+    ]);
 
-    if (_settings.autoStartBreaks.value) {
+    if (_settings.autoStartBreaks) {
       Future.delayed(const Duration(seconds: 2), () {
-        // Refresh start time and start counting
         _startNewSession();
         startTimer();
       });
@@ -295,22 +299,32 @@ class TimerController extends GetxController {
   }
 
   String get formattedTime {
-    final minutes = remainingSeconds.value ~/ 60;
-    final seconds = remainingSeconds.value % 60;
+    final minutes = remainingSeconds ~/ 60;
+    final seconds = remainingSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   double get progress {
-    if (totalSeconds.value == 0) return 0.0;
-    return 1.0 - (remainingSeconds.value / totalSeconds.value);
+    if (totalSeconds == 0) return 0.0;
+    return 1.0 - (remainingSeconds / totalSeconds);
   }
 
   String get currentPhaseLabel {
     if (isBreakPhase) {
-      return currentBreakType.value == BreakType.longBreak
+      return currentBreakType == BreakType.longBreak
           ? 'Descanso Largo'
           : 'Descanso Corto';
     }
     return 'Enfoque';
+  }
+
+  // Exposed for Views to trigger full update if needed (e.g. initial load)
+  void refreshUI() {
+    update([
+      UiIds.ID_TIMER_TEXT,
+      UiIds.ID_TIMER_PROGRESS,
+      UiIds.ID_TIMER_CONTROLS,
+      UiIds.ID_SESSION_INFO,
+    ]);
   }
 }

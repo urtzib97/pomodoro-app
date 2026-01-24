@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../controllers/stats_controller.dart';
+import '../core/ui_ids.dart';
 import '../models/pomodoro_session.dart';
 
 class StatsView extends StatelessWidget {
@@ -27,8 +28,9 @@ class StatsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Period Selector
-                  Obx(
-                    () => SegmentedButton<String>(
+                  GetBuilder<StatsController>(
+                    id: UiIds.ID_STATS_SUMMARY,
+                    builder: (controller) => SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(
                           value: 'today',
@@ -41,9 +43,9 @@ class StatsView extends StatelessWidget {
                           icon: Icon(Icons.calendar_view_week),
                         ),
                       ],
-                      selected: {statsController.selectedPeriod.value},
+                      selected: {controller.selectedPeriod},
                       onSelectionChanged: (Set<String> selected) {
-                        statsController.setPeriod(selected.first);
+                        controller.setPeriod(selected.first);
                       },
                     ),
                   ),
@@ -51,14 +53,15 @@ class StatsView extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Summary Cards
-                  Obx(
-                    () => Row(
+                  GetBuilder<StatsController>(
+                    id: UiIds.ID_STATS_SUMMARY,
+                    builder: (controller) => Row(
                       children: [
                         Expanded(
                           child: _buildStatCard(
                             context,
                             title: 'Pomodoros',
-                            value: '${statsController.currentPomodoros}',
+                            value: '${controller.currentPomodoros}',
                             icon: Icons.timer,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -68,7 +71,7 @@ class StatsView extends StatelessWidget {
                           child: _buildStatCard(
                             context,
                             title: 'Minutos',
-                            value: '${statsController.totalMinutes}',
+                            value: '${controller.totalMinutes}',
                             icon: Icons.access_time,
                             color: Theme.of(context).colorScheme.secondary,
                           ),
@@ -79,13 +82,13 @@ class StatsView extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  Obx(
-                    () => _buildStatCard(
+                  GetBuilder<StatsController>(
+                    id: UiIds.ID_STATS_SUMMARY,
+                    builder: (controller) => _buildStatCard(
                       context,
                       title: 'Tasa de completación',
-                      value:
-                          '${statsController.completionRate.toStringAsFixed(0)}%',
-                      subtitle: statsController.completionRateFormula,
+                      value: '${controller.completionRate.toStringAsFixed(0)}%',
+                      subtitle: controller.completionRateFormula,
                       icon: Icons.trending_up,
                       color: Theme.of(context).colorScheme.tertiary,
                       isFullWidth: true,
@@ -95,28 +98,31 @@ class StatsView extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Weekly Chart (only for week view)
-                  Obx(() {
-                    if (statsController.selectedPeriod.value == 'week') {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Actividad semanal',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildWeeklyChart(context, statsController),
-                          const SizedBox(height: 24),
-                        ],
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
+                  GetBuilder<StatsController>(
+                    id: UiIds.ID_STATS_CHART,
+                    builder: (controller) {
+                      if (controller.selectedPeriod == 'week') {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Actividad semanal',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildWeeklyChart(context, controller),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
 
                   // Session History
                   Text(
@@ -127,50 +133,55 @@ class StatsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  Obx(() {
-                    final sessions = statsController.workSessions;
+                  GetBuilder<StatsController>(
+                    id: UiIds.ID_STATS_SUMMARY,
+                    builder: (controller) {
+                      final sessions = controller.workSessions;
 
-                    if (sessions.isEmpty) {
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.history,
-                                  size: 48,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.3),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No hay sesiones registradas',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                ),
-                              ],
+                      if (sessions.isEmpty) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.history,
+                                    size: 48,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No hay sesiones registradas',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }
+                        );
+                      }
 
-                    return Column(
-                      children: sessions
-                          .map((session) => _buildSessionCard(context, session))
-                          .toList(),
-                    );
-                  }),
+                      return Column(
+                        children: sessions
+                            .map(
+                              (session) => _buildSessionCard(context, session),
+                            )
+                            .toList(),
+                      );
+                    },
+                  ),
 
                   const SizedBox(height: 16),
                 ],

@@ -1,15 +1,16 @@
 import 'package:get/get.dart';
+import '../core/ui_ids.dart';
 import '../models/pomodoro_session.dart';
 import '../services/database_service.dart';
 
 class StatsController extends GetxController {
   final DatabaseService _db = Get.find<DatabaseService>();
 
-  final todayPomodoros = 0.obs;
-  final weekPomodoros = 0.obs;
-  final todaySessions = <PomodoroSession>[].obs;
-  final weekSessions = <PomodoroSession>[].obs;
-  final selectedPeriod = 'today'.obs; // 'today' or 'week'
+  int todayPomodoros = 0;
+  int weekPomodoros = 0;
+  List<PomodoroSession> todaySessions = [];
+  List<PomodoroSession> weekSessions = [];
+  String selectedPeriod = 'today'; // 'today' or 'week'
 
   @override
   void onInit() {
@@ -20,21 +21,21 @@ class StatsController extends GetxController {
   Future<void> refreshStats() async {
     await loadTodayStats();
     await loadWeekStats();
+    update([UiIds.ID_STATS_SUMMARY, UiIds.ID_STATS_CHART]);
   }
 
   Future<void> loadTodayStats() async {
-    todayPomodoros.value = await _db.getCompletedPomodorosToday();
+    todayPomodoros = await _db.getCompletedPomodorosToday();
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
-    todaySessions.value =
-        await _db.getSessionsByDateRange(startOfDay, endOfDay);
+    todaySessions = await _db.getSessionsByDateRange(startOfDay, endOfDay);
   }
 
   Future<void> loadWeekStats() async {
-    weekPomodoros.value = await _db.getCompletedPomodorosThisWeek();
+    weekPomodoros = await _db.getCompletedPomodorosThisWeek();
 
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
@@ -44,24 +45,24 @@ class StatsController extends GetxController {
       startOfWeek.day,
     );
 
-    weekSessions.value = await _db.getSessionsByDateRange(
+    weekSessions = await _db.getSessionsByDateRange(
       startOfWeekDay,
       now,
     );
   }
 
   void setPeriod(String period) {
-    selectedPeriod.value = period;
+    if (selectedPeriod == period) return;
+    selectedPeriod = period;
+    update([UiIds.ID_STATS_SUMMARY, UiIds.ID_STATS_CHART]);
   }
 
   List<PomodoroSession> get currentSessions {
-    return selectedPeriod.value == 'today' ? todaySessions : weekSessions;
+    return selectedPeriod == 'today' ? todaySessions : weekSessions;
   }
 
   int get currentPomodoros {
-    return selectedPeriod.value == 'today'
-        ? todayPomodoros.value
-        : weekPomodoros.value;
+    return selectedPeriod == 'today' ? todayPomodoros : weekPomodoros;
   }
 
   int get totalMinutes {
@@ -87,7 +88,7 @@ class StatsController extends GetxController {
   }
 
   Map<String, int> get dailyBreakdown {
-    if (selectedPeriod.value != 'week') return {};
+    if (selectedPeriod != 'week') return {};
 
     final Map<String, int> breakdown = {};
     final now = DateTime.now();

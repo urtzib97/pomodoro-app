@@ -1,13 +1,14 @@
 import 'package:get/get.dart';
+import '../core/ui_ids.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
 
 class TaskController extends GetxController {
   final DatabaseService _db = Get.find<DatabaseService>();
 
-  final tasks = <Task>[].obs;
-  final selectedTask = Rxn<Task>();
-  final completedTasksCount = 0.obs;
+  List<Task> tasks = [];
+  Task? selectedTask;
+  int completedTasksCount = 0;
 
   @override
   void onInit() {
@@ -16,8 +17,9 @@ class TaskController extends GetxController {
   }
 
   Future<void> loadTasks() async {
-    tasks.value = await _db.getAllTasks();
+    tasks = await _db.getAllTasks();
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> addTask(String title, int estimatedPomodoros) async {
@@ -30,6 +32,7 @@ class TaskController extends GetxController {
     final newTask = task.copyWith(id: id);
     tasks.insert(0, newTask);
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> toggleTaskCompletion(int taskId) async {
@@ -46,22 +49,26 @@ class TaskController extends GetxController {
     tasks[taskIndex] = updatedTask;
 
     // Only deselect if it matches the currently selected task
-    if (selectedTask.value?.id == taskId && updatedTask.isCompleted) {
-      selectedTask.value = null;
+    if (selectedTask?.id == taskId && updatedTask.isCompleted) {
+      selectedTask = null;
+      update([UiIds.ID_CURRENT_TASK_DISPLAY]);
     }
 
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> deleteTask(int taskId) async {
     await _db.deleteTask(taskId);
     tasks.removeWhere((t) => t.id == taskId);
 
-    if (selectedTask.value?.id == taskId) {
-      selectedTask.value = null;
+    if (selectedTask?.id == taskId) {
+      selectedTask = null;
+      update([UiIds.ID_CURRENT_TASK_DISPLAY]);
     }
 
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> incrementTaskPomodoro(int taskId) async {
@@ -82,13 +89,14 @@ class TaskController extends GetxController {
     await _db.updateTask(updatedTask);
     tasks[taskIndex] = updatedTask;
 
-    if (selectedTask.value?.id == taskId) {
-      // If task is completed, we might want to keep it selected until the timer controller handles it
-      // making sure the UI updates reflect the new state
-      selectedTask.value = updatedTask;
+    if (selectedTask?.id == taskId) {
+      // Keep selected but update its state in memory so timer knows
+      selectedTask = updatedTask;
+      update([UiIds.ID_CURRENT_TASK_DISPLAY]);
     }
 
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> decrementTaskPomodoro(int taskId) async {
@@ -99,25 +107,23 @@ class TaskController extends GetxController {
     if (task.completedPomodoros <= 0) return;
 
     final newCompletedPomodoros = task.completedPomodoros - 1;
-    // If we decrement, we un-complete the task if it was completed by count
-    // BUT only if the new count is less than estimated.
-    // However, if user manually checked it, we might want to keep it checked?
-    // Requirement says "-- uncheck", so we'll uncheck if completed.
 
     final updatedTask = task.copyWith(
       completedPomodoros: newCompletedPomodoros,
-      isCompleted: false,
+      isCompleted: false, // Uncheck if decremented
       completedAt: null,
     );
 
     await _db.updateTask(updatedTask);
     tasks[taskIndex] = updatedTask;
 
-    if (selectedTask.value?.id == taskId) {
-      selectedTask.value = updatedTask;
+    if (selectedTask?.id == taskId) {
+      selectedTask = updatedTask;
+      update([UiIds.ID_CURRENT_TASK_DISPLAY]);
     }
 
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   Future<void> updateTaskEstimate(int taskId, int newEstimate) async {
@@ -125,7 +131,6 @@ class TaskController extends GetxController {
     if (taskIndex == -1) return;
 
     final task = tasks[taskIndex];
-    // Recalculate completion based on new estimate
     final isNowCompleted = task.completedPomodoros >= newEstimate;
 
     final updatedTask = task.copyWith(
@@ -137,15 +142,19 @@ class TaskController extends GetxController {
     await _db.updateTask(updatedTask);
     tasks[taskIndex] = updatedTask;
 
-    if (selectedTask.value?.id == taskId) {
-      selectedTask.value = updatedTask;
+    if (selectedTask?.id == taskId) {
+      selectedTask = updatedTask;
+      update([UiIds.ID_CURRENT_TASK_DISPLAY]);
     }
 
     _updateCompletedCount();
+    update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
   void selectTask(Task? task) {
-    selectedTask.value = task;
+    if (selectedTask?.id == task?.id) return; // No change
+    selectedTask = task;
+    update([UiIds.ID_CURRENT_TASK_DISPLAY]);
   }
 
   List<Task> get activeTasks => tasks.where((t) => !t.isCompleted).toList();
@@ -163,6 +172,6 @@ class TaskController extends GetxController {
   }
 
   void _updateCompletedCount() {
-    completedTasksCount.value = todayCompletedCount;
+    completedTasksCount = todayCompletedCount;
   }
 }

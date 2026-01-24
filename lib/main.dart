@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'core/ui_ids.dart';
 import 'utils/theme.dart';
 import 'services/notification_service.dart';
 import 'services/database_service.dart';
@@ -43,15 +44,14 @@ class PomodoroApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settingsController = Get.find<SettingsController>();
-
-    return Obx(
-      () => GetMaterialApp(
+    return GetBuilder<SettingsController>(
+      id: UiIds.ID_THEME_MODE_SELECTOR,
+      builder: (controller) => GetMaterialApp(
         title: 'Pomodoro Timer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: settingsController.themeMode.value,
+        themeMode: controller.themeMode,
         home: const HomeView(),
       ),
     );

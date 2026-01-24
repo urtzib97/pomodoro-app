@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/task_controller.dart';
+import '../core/ui_ids.dart';
 import '../widgets/task_item.dart';
 import '../widgets/add_task_dialog.dart';
 
@@ -9,8 +10,6 @@ class TasksView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskController = Get.find<TaskController>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tareas'),
@@ -22,8 +21,9 @@ class TasksView extends StatelessWidget {
             // Header with completed count
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Obx(
-                () => Card(
+              child: GetBuilder<TaskController>(
+                id: UiIds.ID_TASK_LIST,
+                builder: (taskController) => Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -71,92 +71,103 @@ class TasksView extends StatelessWidget {
 
             // Task List
             Expanded(
-              child: Obx(() {
-                final activeTasks = taskController.activeTasks;
-                final completedTasks = taskController.completedTasks;
+              child: GetBuilder<TaskController>(
+                id: UiIds.ID_TASK_LIST,
+                builder: (taskController) {
+                  final activeTasks = taskController.activeTasks;
+                  final completedTasks = taskController.completedTasks;
 
-                if (activeTasks.isEmpty && completedTasks.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.task_outlined,
-                          size: 64,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.3),
+                  if (activeTasks.isEmpty && completedTasks.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.task_outlined,
+                            size: 64,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No hay tareas',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.5),
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Presiona + para agregar una tarea',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.4),
+                                ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    children: [
+                      if (activeTasks.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'ACTIVAS',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.5),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No hay tareas',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.5),
-                                  ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Presiona + para agregar una tarea',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.4),
-                                  ),
-                        ),
+                        ...activeTasks.map((task) => TaskItem(task: task)),
                       ],
-                    ),
+                      if (completedTasks.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'COMPLETADAS',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.5),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        ...completedTasks.map((task) => TaskItem(task: task)),
+                      ],
+                      const SizedBox(height: 80),
+                    ],
                   );
-                }
-
-                return ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  children: [
-                    if (activeTasks.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          'ACTIVAS',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.5),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                      ),
-                      ...activeTasks.map((task) => TaskItem(task: task)),
-                    ],
-                    if (completedTasks.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          'COMPLETADAS',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.5),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                      ),
-                      ...completedTasks.map((task) => TaskItem(task: task)),
-                    ],
-                    const SizedBox(height: 80),
-                  ],
-                );
-              }),
+                },
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/settings_controller.dart';
+import '../core/ui_ids.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -30,11 +31,12 @@ class SettingsView extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Card(
-            child: Obx(
-              () => RadioGroup<ThemeMode>(
-                groupValue: settingsController.themeMode.value,
+            child: GetBuilder<SettingsController>(
+              id: UiIds.ID_THEME_MODE_SELECTOR,
+              builder: (controller) => RadioGroup<ThemeMode>(
+                groupValue: controller.themeMode,
                 onChanged: (ThemeMode? value) {
-                  if (value != null) settingsController.setThemeMode(value);
+                  if (value != null) controller.setThemeMode(value);
                 },
                 child: const Column(
                   children: [
@@ -75,58 +77,59 @@ class SettingsView extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Obx(
-                    () => _buildSlider(
+                  GetBuilder<SettingsController>(
+                    id: UiIds.ID_WORK_DURATION_SLIDER,
+                    builder: (controller) => _buildSlider(
                       context,
                       label: 'Trabajo',
-                      value: settingsController.workDuration.value.toDouble(),
+                      value: controller.workDuration.toDouble(),
                       min: 1,
                       max: 60,
                       divisions: 59,
                       onChanged: (value) =>
-                          settingsController.setWorkDuration(value.toInt()),
+                          controller.setWorkDuration(value.toInt()),
                     ),
                   ),
                   const Divider(),
-                  Obx(
-                    () => _buildSlider(
+                  GetBuilder<SettingsController>(
+                    id: UiIds.ID_SHORT_BREAK_SLIDER,
+                    builder: (controller) => _buildSlider(
                       context,
                       label: 'Pausa corta',
-                      value: settingsController.shortBreakDuration.value
-                          .toDouble(),
+                      value: controller.shortBreakDuration.toDouble(),
                       min: 1,
                       max: 15,
                       divisions: 14,
-                      onChanged: (value) => settingsController
-                          .setShortBreakDuration(value.toInt()),
+                      onChanged: (value) =>
+                          controller.setShortBreakDuration(value.toInt()),
                     ),
                   ),
                   const Divider(),
-                  Obx(
-                    () => _buildSlider(
+                  GetBuilder<SettingsController>(
+                    id: UiIds.ID_LONG_BREAK_SLIDER,
+                    builder: (controller) => _buildSlider(
                       context,
                       label: 'Pausa larga',
-                      value:
-                          settingsController.longBreakDuration.value.toDouble(),
+                      value: controller.longBreakDuration.toDouble(),
                       min: 10,
                       max: 45,
                       divisions: 35,
-                      onChanged: (value) => settingsController
-                          .setLongBreakDuration(value.toInt()),
+                      onChanged: (value) =>
+                          controller.setLongBreakDuration(value.toInt()),
                     ),
                   ),
                   const Divider(),
-                  Obx(
-                    () => _buildSlider(
+                  GetBuilder<SettingsController>(
+                    id: UiIds.ID_POMODOROS_BEFORE_LONG_BREAK_SLIDER,
+                    builder: (controller) => _buildSlider(
                       context,
                       label: 'Pomodoros antes de pausa larga',
-                      value: settingsController.pomodorosBeforeLongBreak.value
-                          .toDouble(),
+                      value: controller.pomodorosBeforeLongBreak.toDouble(),
                       min: 2,
                       max: 8,
                       divisions: 6,
-                      onChanged: (value) => settingsController
-                          .setPomodorosBeforeLongBreak(value.toInt()),
+                      onChanged: (value) =>
+                          controller.setPomodorosBeforeLongBreak(value.toInt()),
                       showMinutes: false,
                     ),
                   ),
@@ -152,11 +155,12 @@ class SettingsView extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                Obx(
-                  () => SwitchListTile(
+                GetBuilder<SettingsController>(
+                  id: UiIds.ID_SOUND_SWITCH,
+                  builder: (controller) => SwitchListTile(
                     title: const Text('Sonido de notificación'),
-                    value: settingsController.soundEnabled.value,
-                    onChanged: (_) => settingsController.toggleSound(),
+                    value: controller.soundEnabled,
+                    onChanged: (_) => controller.toggleSound(),
                   ),
                 ),
               ],
@@ -180,37 +184,37 @@ class SettingsView extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                Obx(
-                  () => SwitchListTile(
+                GetBuilder<SettingsController>(
+                  id: UiIds.ID_AUTO_START_BREAKS_SWITCH,
+                  builder: (controller) => SwitchListTile(
                     title: const Text('Iniciar pausas automáticamente'),
                     subtitle: const Text(
                       'Iniciar el temporizador de pausa al terminar trabajo',
                     ),
-                    value: settingsController.autoStartBreaks.value,
-                    onChanged: (_) =>
-                        settingsController.toggleAutoStartBreaks(),
+                    value: controller.autoStartBreaks,
+                    onChanged: (_) => controller.toggleAutoStartBreaks(),
                   ),
                 ),
                 const Divider(height: 1),
-                Obx(
-                  () => SwitchListTile(
+                GetBuilder<SettingsController>(
+                  id: UiIds.ID_AUTO_START_POMODOROS_SWITCH,
+                  builder: (controller) => SwitchListTile(
                     title: const Text('Iniciar pomodoros automáticamente'),
                     subtitle:
                         const Text('Iniciar el temporizador al terminar pausa'),
-                    value: settingsController.autoStartPomodoros.value,
-                    onChanged: (_) =>
-                        settingsController.toggleAutoStartPomodoros(),
+                    value: controller.autoStartPomodoros,
+                    onChanged: (_) => controller.toggleAutoStartPomodoros(),
                   ),
                 ),
                 const Divider(height: 1),
-                Obx(
-                  () => SwitchListTile(
+                GetBuilder<SettingsController>(
+                  id: UiIds.ID_FULLSCREEN_BREAKS_SWITCH,
+                  builder: (controller) => SwitchListTile(
                     title: const Text('Pantalla completa en pausas'),
                     subtitle:
                         const Text('Mostrar notificación a pantalla completa'),
-                    value: settingsController.fullscreenBreaks.value,
-                    onChanged: (_) =>
-                        settingsController.toggleFullscreenBreaks(),
+                    value: controller.fullscreenBreaks,
+                    onChanged: (_) => controller.toggleFullscreenBreaks(),
                   ),
                 ),
                 const Divider(height: 1),
@@ -229,13 +233,13 @@ class SettingsView extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
-                      Obx(
-                        () => RadioGroup<String>(
-                          groupValue:
-                              settingsController.taskCompletionBehavior.value,
+                      GetBuilder<SettingsController>(
+                        id: UiIds.ID_TASK_COMPLETION_BEHAVIOR_SELECTOR,
+                        builder: (controller) => RadioGroup<String>(
+                          groupValue: controller.taskCompletionBehavior,
                           onChanged: (v) {
                             if (v != null) {
-                              settingsController.setTaskCompletionBehavior(v);
+                              controller.setTaskCompletionBehavior(v);
                             }
                           },
                           child: const Column(

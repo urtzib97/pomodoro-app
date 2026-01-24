@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/timer_controller.dart';
 import '../controllers/task_controller.dart';
+import '../core/ui_ids.dart';
 
 import '../widgets/circular_timer.dart';
 import '../widgets/timer_controls.dart';
@@ -15,8 +16,6 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timerController = Get.find<TimerController>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pomodoro'),
@@ -40,8 +39,9 @@ class HomeView extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Phase Label
-                      Obx(
-                        () => AnimatedDefaultTextStyle(
+                      GetBuilder<TimerController>(
+                        id: UiIds.ID_SESSION_INFO,
+                        builder: (timerController) => AnimatedDefaultTextStyle(
                           style: Theme.of(context)
                               .textTheme
                               .titleLarge!
@@ -65,8 +65,9 @@ class HomeView extends StatelessWidget {
                       const SizedBox(height: 40),
 
                       // Pomodoro Counter
-                      Obx(
-                        () => Row(
+                      GetBuilder<TimerController>(
+                        id: UiIds.ID_SESSION_INFO,
+                        builder: (timerController) => Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
@@ -79,7 +80,7 @@ class HomeView extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${timerController.completedPomodoros.value} Pomodoros completados',
+                              '${timerController.completedPomodoros} Pomodoros completados',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge
@@ -102,32 +103,30 @@ class HomeView extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // Finish Task Button
-                      Obx(() {
-                        if (!timerController.isBreakPhase &&
-                            Get.find<TaskController>().selectedTask.value !=
-                                null) {
-                          return TextButton.icon(
-                            onPressed: () {
-                              // Manual finish task
-                              // We can trigger the same logic as timer complete but force it?
-                              // Or just mark task as complete?
-                              // "manual complete + trigger behavior"
-                              // Let's call the controller method we added/will add?
-                              // Actually we need to add a method in timer_controller to handle "Manual Finish"
-                              // For now, let's implement the logic here or in controller.
-                              // Ideally controller.
-                              _finishTaskManually(context);
-                            },
-                            icon: const Icon(Icons.check),
-                            label: const Text('Terminar tarea actual'),
-                            style: TextButton.styleFrom(
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }),
+                      GetBuilder<TimerController>(
+                        id: UiIds.ID_SESSION_INFO,
+                        builder: (timerController) =>
+                            GetBuilder<TaskController>(
+                          id: UiIds.ID_CURRENT_TASK_DISPLAY,
+                          builder: (taskController) {
+                            if (!timerController.isBreakPhase &&
+                                taskController.selectedTask != null) {
+                              return TextButton.icon(
+                                onPressed: () {
+                                  _finishTaskManually(context);
+                                },
+                                icon: const Icon(Icons.check),
+                                label: const Text('Terminar tarea actual'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
 
                       const SizedBox(height: 16),
 
@@ -172,7 +171,7 @@ class HomeView extends StatelessWidget {
 
   Color _getPhaseColor(BuildContext context, TimerController controller) {
     if (controller.isBreakPhase) {
-      return controller.currentBreakType.value == BreakType.longBreak
+      return controller.currentBreakType == BreakType.longBreak
           ? const Color(0xFFFF9800) // Orange
           : const Color(0xFF2196F3); // Blue
     }
@@ -182,7 +181,7 @@ class HomeView extends StatelessWidget {
   void _finishTaskManually(BuildContext context) {
     final taskController = Get.find<TaskController>();
     final timerController = Get.find<TimerController>();
-    final currentTask = taskController.selectedTask.value;
+    final currentTask = taskController.selectedTask;
 
     if (currentTask == null) return;
 
@@ -214,29 +213,12 @@ class HomeView extends StatelessWidget {
               // If we want to "trigger behavior", we should probably just treat it as "Session Complete" but specifically for Task.
               // Let's skip the remaining time and trigger complete.
 
-              timerController.remainingSeconds.value =
-                  0; // Will trigger _runTimer callback? No, _runTimer checks periodically.
-              // We should manually call logic.
-              // But _onTimerComplete increments pomodoros. Do we want to count this fractional pomodoro?
-              // Usually "Finish task" means "I'm done".
-              // Let's assume we want to count it? Or maybe not?
-              // Requirement says "trigger behavior".
-              // I'll call a new method in TimerController: forceFinishSession()
+              // Trigger timer completion logic for transition
+              // We reset timer to 0 so next tick handles completion or we force it.
+              timerController.remainingSeconds = 0;
 
-              // Wait, if I cannot edit TimerController right now (I can, but in parallel steps).
-              // I will add the method to timer_controller in the next step or assume it exists/add it now.
-              // I will implement the logic directly here for now to avoid back and forth, or better:
-              // Just use skipToBreak() but that doesn't mark task complete?
-              // I already marked task complete above.
-              // So if I call skipToBreak(), it will go to break.
-              // But `_onTimerComplete` logic handles "Task Complete" checks.
-              // If I already marked it complete, `_onTimerComplete` might re-trigger "Task Complete" dialog?
-              // `_onTimerComplete` checks `updatedTask.isCompleted`.
-              // If it is already completed, it might trigger logic.
-
-              // Let's just simply:
-              // 1. Mark task complete (done).
-              // 2. Skip to break.
+              // We also explicitely skip to break to be sure functionality is triggered immediately
+              // instead of waiting for next tick if paused.
               timerController.skipToBreak();
             },
             child: const Text('Terminar'),

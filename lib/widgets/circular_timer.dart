@@ -2,78 +2,86 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:math' as math;
 import '../controllers/timer_controller.dart';
+import '../core/ui_ids.dart';
 
 class CircularTimer extends StatelessWidget {
   const CircularTimer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final timerController = Get.find<TimerController>();
+    return GetBuilder<TimerController>(
+      id: UiIds.ID_TIMER_PROGRESS,
+      builder: (timerController) {
+        final progress = timerController.progress;
+        final isBreak = timerController.isBreakPhase;
 
-    return Obx(() {
-      final progress = timerController.progress;
-      final isBreak = timerController.isBreakPhase;
+        Color progressColor;
+        if (isBreak) {
+          progressColor =
+              timerController.currentBreakType == BreakType.longBreak
+                  ? Theme.of(context).colorScheme.tertiary
+                  : Theme.of(context).colorScheme.secondary;
+        } else {
+          progressColor = Theme.of(context).colorScheme.primary;
+        }
 
-      Color progressColor;
-      if (isBreak) {
-        progressColor =
-            timerController.currentBreakType.value == BreakType.longBreak
-                ? Theme.of(context).colorScheme.tertiary
-                : Theme.of(context).colorScheme.secondary;
-      } else {
-        progressColor = Theme.of(context).colorScheme.primary;
-      }
-
-      return SizedBox(
-        width: 280,
-        height: 280,
-        child: TweenAnimationBuilder<Color?>(
-          tween: ColorTween(begin: progressColor, end: progressColor),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-          builder: (_, animatedColor, __) {
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Background circle
-                CustomPaint(
-                  size: const Size(280, 280),
-                  painter: CircleBackgroundPainter(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.1),
-                  ),
-                ),
-                // Progress circle
-                CustomPaint(
-                  size: const Size(280, 280),
-                  painter: CircleProgressPainter(
-                    progress: progress,
-                    color: animatedColor ?? progressColor,
-                  ),
-                ),
-                // Time display
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      timerController.formattedTime,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: 64,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: -2,
-                        fontFeatures: [const FontFeature.tabularFigures()],
-                      ),
+        return SizedBox(
+          width: 280,
+          height: 280,
+          child: TweenAnimationBuilder<Color?>(
+            tween: ColorTween(begin: progressColor, end: progressColor),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            builder: (_, animatedColor, __) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background circle
+                  CustomPaint(
+                    size: const Size(280, 280),
+                    painter: CircleBackgroundPainter(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.1),
                     ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    });
+                  ),
+                  // Progress circle
+                  CustomPaint(
+                    size: const Size(280, 280),
+                    painter: CircleProgressPainter(
+                      progress: progress,
+                      color: animatedColor ?? progressColor,
+                    ),
+                  ),
+                  // Time display
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GetBuilder<TimerController>(
+                        id: UiIds.ID_TIMER_TEXT,
+                        builder: (controller) => Text(
+                          controller.formattedTime,
+                          style: Theme.of(context)
+                              .textTheme
+                              .displayLarge
+                              ?.copyWith(
+                            fontSize: 64,
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: -2,
+                            fontFeatures: [const FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 }
 

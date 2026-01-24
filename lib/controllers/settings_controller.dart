@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/ui_ids.dart';
 
 class SettingsController extends GetxController {
   // Theme
-  final themeMode = ThemeMode.system.obs;
+  ThemeMode themeMode = ThemeMode.system;
 
   // Timer durations (in minutes)
-  final workDuration = 25.obs;
-  final shortBreakDuration = 5.obs;
-  final longBreakDuration = 20.obs;
+  int workDuration = 25;
+  int shortBreakDuration = 5;
+  int longBreakDuration = 20;
 
   // Pomodoros before long break
-  final pomodorosBeforeLongBreak = 4.obs;
+  int pomodorosBeforeLongBreak = 4;
 
   // Sound settings
-  final soundEnabled = true.obs;
-  final selectedSound = 'default'.obs;
+  bool soundEnabled = true;
+  String selectedSound = 'default';
 
   // Fullscreen settings
-  final fullscreenBreaks = false.obs;
+  bool fullscreenBreaks = false;
 
   // Auto-start next timer
-  final autoStartBreaks = false.obs;
-  final autoStartPomodoros = false.obs;
+  bool autoStartBreaks = false;
+  bool autoStartPomodoros = false;
 
   // Task Completion Behavior
-  final taskCompletionBehavior = 'ask'.obs; // 'ask', 'auto', 'continue'
+  String taskCompletionBehavior = 'ask'; // 'ask', 'auto', 'continue'
 
   @override
   void onInit() {
@@ -39,32 +40,32 @@ class SettingsController extends GetxController {
 
     // Theme
     final themeModeStr = prefs.getString('themeMode') ?? 'system';
-    themeMode.value = ThemeMode.values.firstWhere(
+    themeMode = ThemeMode.values.firstWhere(
       (e) => e.toString() == 'ThemeMode.$themeModeStr',
       orElse: () => ThemeMode.system,
     );
 
     // Durations
-    workDuration.value = prefs.getInt('workDuration') ?? 25;
-    shortBreakDuration.value = prefs.getInt('shortBreakDuration') ?? 5;
-    longBreakDuration.value = prefs.getInt('longBreakDuration') ?? 20;
-    pomodorosBeforeLongBreak.value =
-        prefs.getInt('pomodorosBeforeLongBreak') ?? 4;
+    workDuration = prefs.getInt('workDuration') ?? 25;
+    shortBreakDuration = prefs.getInt('shortBreakDuration') ?? 5;
+    longBreakDuration = prefs.getInt('longBreakDuration') ?? 20;
+    pomodorosBeforeLongBreak = prefs.getInt('pomodorosBeforeLongBreak') ?? 4;
 
     // Sound
-    soundEnabled.value = prefs.getBool('soundEnabled') ?? true;
-    selectedSound.value = prefs.getString('selectedSound') ?? 'default';
+    soundEnabled = prefs.getBool('soundEnabled') ?? true;
+    selectedSound = prefs.getString('selectedSound') ?? 'default';
 
     // Fullscreen
-    fullscreenBreaks.value = prefs.getBool('fullscreenBreaks') ?? false;
+    fullscreenBreaks = prefs.getBool('fullscreenBreaks') ?? false;
 
     // Auto-start
-    autoStartBreaks.value = prefs.getBool('autoStartBreaks') ?? false;
-    autoStartPomodoros.value = prefs.getBool('autoStartPomodoros') ?? false;
+    autoStartBreaks = prefs.getBool('autoStartBreaks') ?? false;
+    autoStartPomodoros = prefs.getBool('autoStartPomodoros') ?? false;
 
     // Task Behavior
-    taskCompletionBehavior.value =
-        prefs.getString('taskCompletionBehavior') ?? 'ask';
+    taskCompletionBehavior = prefs.getString('taskCompletionBehavior') ?? 'ask';
+
+    update(); // Update all IDs
   }
 
   Future<void> saveSettings() async {
@@ -72,93 +73,115 @@ class SettingsController extends GetxController {
 
     await prefs.setString(
       'themeMode',
-      themeMode.value.toString().split('.').last,
+      themeMode.toString().split('.').last,
     );
-    await prefs.setInt('workDuration', workDuration.value);
-    await prefs.setInt('shortBreakDuration', shortBreakDuration.value);
-    await prefs.setInt('longBreakDuration', longBreakDuration.value);
+    await prefs.setInt('workDuration', workDuration);
+    await prefs.setInt('shortBreakDuration', shortBreakDuration);
+    await prefs.setInt('longBreakDuration', longBreakDuration);
     await prefs.setInt(
       'pomodorosBeforeLongBreak',
-      pomodorosBeforeLongBreak.value,
+      pomodorosBeforeLongBreak,
     );
-    await prefs.setBool('soundEnabled', soundEnabled.value);
-    await prefs.setString('selectedSound', selectedSound.value);
-    await prefs.setBool('fullscreenBreaks', fullscreenBreaks.value);
-    await prefs.setBool('autoStartBreaks', autoStartBreaks.value);
-    await prefs.setBool('autoStartPomodoros', autoStartPomodoros.value);
+    await prefs.setBool('soundEnabled', soundEnabled);
+    await prefs.setString('selectedSound', selectedSound);
+    await prefs.setBool('fullscreenBreaks', fullscreenBreaks);
+    await prefs.setBool('autoStartBreaks', autoStartBreaks);
+    await prefs.setBool('autoStartPomodoros', autoStartPomodoros);
     await prefs.setString(
       'taskCompletionBehavior',
-      taskCompletionBehavior.value,
+      taskCompletionBehavior,
     );
   }
 
   void setThemeMode(ThemeMode mode) {
-    themeMode.value = mode;
+    if (themeMode == mode) return;
+    themeMode = mode;
     saveSettings();
+    update([UiIds.ID_THEME_MODE_SELECTOR]);
+    Get.changeThemeMode(mode);
   }
 
   void setWorkDuration(int minutes) {
-    workDuration.value = minutes;
+    if (workDuration == minutes) return;
+    workDuration = minutes;
     saveSettings();
+    update([UiIds.ID_WORK_DURATION_SLIDER]);
   }
 
   void setShortBreakDuration(int minutes) {
-    shortBreakDuration.value = minutes;
+    if (shortBreakDuration == minutes) return;
+    shortBreakDuration = minutes;
     saveSettings();
+    update([UiIds.ID_SHORT_BREAK_SLIDER]);
   }
 
   void setLongBreakDuration(int minutes) {
-    longBreakDuration.value = minutes;
+    if (longBreakDuration == minutes) return;
+    longBreakDuration = minutes;
     saveSettings();
+    update([UiIds.ID_LONG_BREAK_SLIDER]);
   }
 
   void setPomodorosBeforeLongBreak(int count) {
-    pomodorosBeforeLongBreak.value = count;
+    if (pomodorosBeforeLongBreak == count) return;
+    pomodorosBeforeLongBreak = count;
     saveSettings();
+    update([UiIds.ID_POMODOROS_BEFORE_LONG_BREAK_SLIDER]);
   }
 
   void toggleSound() {
-    soundEnabled.value = !soundEnabled.value;
+    soundEnabled = !soundEnabled;
     saveSettings();
+    update([UiIds.ID_SOUND_SWITCH]);
   }
 
   void setSound(String sound) {
-    selectedSound.value = sound;
+    if (selectedSound == sound) return;
+    selectedSound = sound;
     saveSettings();
+    // No specific UI ID for sound selection yet, or maybe generic update if needed
+    // Assuming UI updates via other means or we add ID later if we add sound selector
   }
 
   void toggleFullscreenBreaks() {
-    fullscreenBreaks.value = !fullscreenBreaks.value;
+    fullscreenBreaks = !fullscreenBreaks;
     saveSettings();
+    update([UiIds.ID_FULLSCREEN_BREAKS_SWITCH]);
   }
 
   void toggleAutoStartBreaks() {
-    autoStartBreaks.value = !autoStartBreaks.value;
+    autoStartBreaks = !autoStartBreaks;
     saveSettings();
+    update([UiIds.ID_AUTO_START_BREAKS_SWITCH]);
   }
 
   void toggleAutoStartPomodoros() {
-    autoStartPomodoros.value = !autoStartPomodoros.value;
+    autoStartPomodoros = !autoStartPomodoros;
     saveSettings();
+    update([UiIds.ID_AUTO_START_POMODOROS_SWITCH]);
   }
 
   void setTaskCompletionBehavior(String behavior) {
-    taskCompletionBehavior.value = behavior;
+    if (taskCompletionBehavior == behavior) return;
+    taskCompletionBehavior = behavior;
     saveSettings();
+    update([UiIds.ID_TASK_COMPLETION_BEHAVIOR_SELECTOR]);
   }
 
   void resetToDefaults() {
-    workDuration.value = 25;
-    shortBreakDuration.value = 5;
-    longBreakDuration.value = 20;
-    pomodorosBeforeLongBreak.value = 4;
-    soundEnabled.value = true;
-    selectedSound.value = 'default';
-    fullscreenBreaks.value = false;
-    autoStartBreaks.value = false;
-    autoStartPomodoros.value = false;
-    themeMode.value = ThemeMode.system;
-    taskCompletionBehavior.value = 'ask';
+    workDuration = 25;
+    shortBreakDuration = 5;
+    longBreakDuration = 20;
+    pomodorosBeforeLongBreak = 4;
+    soundEnabled = true;
+    selectedSound = 'default';
+    fullscreenBreaks = false;
+    autoStartBreaks = false;
+    autoStartPomodoros = false;
+    themeMode = ThemeMode.system;
+    taskCompletionBehavior = 'ask';
     saveSettings();
+    update(); // Update all to reflect reset
+    Get.changeThemeMode(ThemeMode.system);
   }
 }
