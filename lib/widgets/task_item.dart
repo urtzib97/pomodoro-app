@@ -66,7 +66,8 @@ class TaskItem extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             leading: Checkbox(
               value: task.isCompleted,
-              onChanged: (_) => taskController.toggleTaskCompletion(task.id!),
+              onChanged: (_) =>
+                  taskController.toggleTaskCompletion(context, task.id!),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),

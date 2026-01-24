@@ -245,7 +245,8 @@ class HomeView extends StatelessWidget {
               Navigator.pop(context);
 
               if (!currentTask.isCompleted) {
-                await taskController.toggleTaskCompletion(currentTask.id!);
+                await taskController.toggleTaskCompletion(
+                    context, currentTask.id!);
               }
 
               timerController.remainingSeconds = 0;

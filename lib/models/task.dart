@@ -50,7 +50,7 @@ class Task {
     int? completedPomodoros,
     bool? isCompleted,
     DateTime? createdAt,
-    DateTime? completedAt,
+    Object? completedAt = const _Undefined(),
   }) {
     return Task(
       id: id ?? this.id,
@@ -59,7 +59,13 @@ class Task {
       completedPomodoros: completedPomodoros ?? this.completedPomodoros,
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
-      completedAt: completedAt ?? this.completedAt,
+      completedAt: completedAt is _Undefined
+          ? this.completedAt
+          : completedAt as DateTime?,
     );
   }
+}
+
+class _Undefined {
+  const _Undefined();
 }

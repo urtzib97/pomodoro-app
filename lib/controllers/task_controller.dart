@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/ui_ids.dart';
 import '../models/task.dart';
@@ -35,11 +36,20 @@ class TaskController extends GetxController {
     update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
   }
 
-  Future<void> toggleTaskCompletion(int taskId) async {
+  Future<void> toggleTaskCompletion(BuildContext context, int taskId) async {
     final taskIndex = tasks.indexWhere((t) => t.id == taskId);
     if (taskIndex == -1) return;
 
     final task = tasks[taskIndex];
+
+    // If undoing completion, ask for confirmation
+    if (task.isCompleted) {
+      final confirmed = await _showUndoConfirmation(context);
+      if (confirmed != true) {
+        return;
+      }
+    }
+
     final updatedTask = task.copyWith(
       isCompleted: !task.isCompleted,
       completedAt: !task.isCompleted ? DateTime.now() : null,
@@ -56,6 +66,28 @@ class TaskController extends GetxController {
 
     _updateCompletedCount();
     update([UiIds.ID_TASK_LIST, UiIds.ID_STATS_SUMMARY]);
+  }
+
+  Future<bool?> _showUndoConfirmation(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Desmarcar tarea'),
+        content: const Text(
+          '¿Estás seguro de que quieres desmarcar esta tarea como completada?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Desmarcar'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> deleteTask(int taskId) async {
@@ -162,12 +194,14 @@ class TaskController extends GetxController {
   List<Task> get completedTasks => tasks.where((t) => t.isCompleted).toList();
 
   int get todayCompletedCount {
-    final today = DateTime.now();
-    final startOfDay = DateTime(today.year, today.month, today.day);
+    final now = DateTime.now();
 
     return tasks.where((task) {
       if (task.completedAt == null) return false;
-      return task.completedAt!.isAfter(startOfDay);
+      final completedDate = task.completedAt!;
+      return completedDate.year == now.year &&
+          completedDate.month == now.month &&
+          completedDate.day == now.day;
     }).length;
   }
 
