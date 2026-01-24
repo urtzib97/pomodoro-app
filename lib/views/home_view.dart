@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../controllers/timer_controller.dart';
 import '../controllers/task_controller.dart';
 import '../core/ui_ids.dart';
@@ -7,6 +8,7 @@ import '../core/ui_ids.dart';
 import '../widgets/circular_timer.dart';
 import '../widgets/timer_controls.dart';
 import '../widgets/task_selector.dart';
+
 import 'tasks_view.dart';
 import 'stats_view.dart';
 import 'settings_view.dart';
@@ -28,116 +30,153 @@ class HomeView extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+        child: Builder(
+          builder: (context) {
+            final mq = MediaQuery.of(context);
+            final screenW = mq.size.width;
+
+            // Mantengo tu fórmula de diámetro
+            final base = screenW * 0.77;
+            final timerDiameter = base.clamp(230.0, 290.0);
+
+            // Alto disponible (sin appbar + safe areas + bottom nav)
+            final availableH = mq.size.height -
+                mq.padding.top -
+                mq.padding.bottom -
+                kToolbarHeight -
+                kBottomNavigationBarHeight;
+
+            // Bloque superior fijo
+            final timerBlockHeight = availableH * 0.52;
+
+            return Column(
+              children: [
+                // TIMER BLOCK (Fixed Height)
+                SizedBox(
+                  height: timerBlockHeight,
+                  width: double.infinity,
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
-
-                      // Phase Label
-                      GetBuilder<TimerController>(
-                        id: UiIds.ID_SESSION_INFO,
-                        builder: (timerController) => AnimatedDefaultTextStyle(
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge!
-                              .copyWith(
-                                color: _getPhaseColor(context, timerController),
-                                fontWeight: FontWeight.w600,
-                              ),
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                          child: Text(
-                            timerController.currentPhaseLabel,
+                      SizedBox(
+                        height: 40,
+                        child: Center(
+                          child: GetBuilder<TimerController>(
+                            id: UiIds.ID_SESSION_INFO,
+                            builder: (timerController) =>
+                                AnimatedDefaultTextStyle(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(
+                                    color: _getPhaseColor(
+                                        context, timerController),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                              child: Text(timerController.currentPhaseLabel),
+                            ),
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 40),
-
-                      // Circular Timer
-                      const CircularTimer(),
-
-                      const SizedBox(height: 40),
-
-                      // Pomodoro Counter
-                      GetBuilder<TimerController>(
-                        id: UiIds.ID_SESSION_INFO,
-                        builder: (timerController) => Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withValues(alpha: 0.7),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${timerController.completedPomodoros} Pomodoros completados',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.7),
-                                  ),
-                            ),
-                          ],
+                      Expanded(
+                        child: Center(
+                          child: CircularTimer(diameter: timerDiameter),
                         ),
                       ),
-
-                      const SizedBox(height: 32),
-
-                      // Task Selector
-                      const TaskSelector(),
-
-                      const SizedBox(height: 16),
-
-                      // Finish Task Button
-                      GetBuilder<TimerController>(
-                        id: UiIds.ID_SESSION_INFO,
-                        builder: (timerController) =>
-                            GetBuilder<TaskController>(
-                          id: UiIds.ID_CURRENT_TASK_DISPLAY,
-                          builder: (taskController) {
-                            if (!timerController.isBreakPhase &&
-                                taskController.selectedTask != null) {
-                              return TextButton.icon(
-                                onPressed: () {
-                                  _finishTaskManually(context);
-                                },
-                                icon: const Icon(Icons.check),
-                                label: const Text('Terminar tarea actual'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+                      SizedBox(
+                        height: 32,
+                        child: GetBuilder<TimerController>(
+                          id: UiIds.ID_SESSION_INFO,
+                          builder: (timerController) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.7),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${timerController.completedPomodoros} Pomodoros completados',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // Timer Controls
-                      const TimerControls(),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
+
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainer
+                          .withValues(alpha: 0.3),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                        child: Column(
+                          children: [
+                            const TaskSelector(),
+                            const SizedBox(height: 16),
+                            GetBuilder<TimerController>(
+                              id: UiIds.ID_SESSION_INFO,
+                              builder: (timerController) =>
+                                  GetBuilder<TaskController>(
+                                id: UiIds.ID_CURRENT_TASK_DISPLAY,
+                                builder: (taskController) {
+                                  if (!timerController.isBreakPhase &&
+                                      taskController.selectedTask != null) {
+                                    return TextButton.icon(
+                                      onPressed: () =>
+                                          _finishTaskManually(context),
+                                      icon: const Icon(Icons.check),
+                                      label:
+                                          const Text('Terminar tarea actual'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const TimerControls(),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: Builder(
@@ -172,10 +211,10 @@ class HomeView extends StatelessWidget {
   Color _getPhaseColor(BuildContext context, TimerController controller) {
     if (controller.isBreakPhase) {
       return controller.currentBreakType == BreakType.longBreak
-          ? const Color(0xFFFF9800) // Orange
-          : const Color(0xFF2196F3); // Blue
+          ? const Color(0xFFFF9800)
+          : const Color(0xFF2196F3);
     }
-    return const Color(0xFF4CAF50); // Green
+    return const Color(0xFF4CAF50);
   }
 
   void _finishTaskManually(BuildContext context) {
@@ -201,24 +240,11 @@ class HomeView extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(context);
 
-              // Mark task as complete
               if (!currentTask.isCompleted) {
                 await taskController.toggleTaskCompletion(currentTask.id!);
               }
 
-              // Trigger timer completion logic for transition
-              // We might need a specific method in timer controller to "Finish and Transition"
-              // reusing _onTimerComplete might double count the pomodoro if we are not careful?
-              // "Finish task" usually implies "I'm done with the task, even if timer isn't up OR timer is up"
-              // If we want to "trigger behavior", we should probably just treat it as "Session Complete" but specifically for Task.
-              // Let's skip the remaining time and trigger complete.
-
-              // Trigger timer completion logic for transition
-              // We reset timer to 0 so next tick handles completion or we force it.
               timerController.remainingSeconds = 0;
-
-              // We also explicitely skip to break to be sure functionality is triggered immediately
-              // instead of waiting for next tick if paused.
               timerController.skipToBreak();
             },
             child: const Text('Terminar'),

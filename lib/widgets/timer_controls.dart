@@ -53,18 +53,19 @@ class TimerControls extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (!isBreak)
-                    TextButton.icon(
-                      onPressed: () => timerController.skipToBreak(),
-                      icon: const Icon(Icons.skip_next, size: 20),
-                      label: const Text('Saltar a descanso'),
+                  TextButton.icon(
+                    onPressed: isBreak
+                        ? () => timerController.skipBreak()
+                        : () => timerController.skipToBreak(),
+                    icon: const Icon(Icons.skip_next, size: 20),
+                    label:
+                        Text(isBreak ? 'Saltar descanso' : 'Saltar descanso'),
+                    style: TextButton.styleFrom(
+                      // Ensure adequate touch target
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                  if (isBreak)
-                    TextButton.icon(
-                      onPressed: () => timerController.skipBreak(),
-                      icon: const Icon(Icons.skip_next, size: 20),
-                      label: const Text('Saltar descanso'),
-                    ),
+                  ),
                 ],
               ),
           ],

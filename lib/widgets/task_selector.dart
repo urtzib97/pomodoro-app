@@ -7,6 +7,8 @@ import '../models/task.dart';
 class TaskSelector extends StatelessWidget {
   const TaskSelector({super.key});
 
+  static const _cardRadius = 16.0;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<TaskController>(
@@ -15,8 +17,13 @@ class TaskSelector extends StatelessWidget {
         final selectedTask = taskController.selectedTask;
         final activeTasks = taskController.activeTasks;
 
+        final cardShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_cardRadius),
+        );
+
         if (activeTasks.isEmpty) {
           return Card(
+            shape: cardShape,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -37,7 +44,7 @@ class TaskSelector extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withValues(alpha: 0.1),
+                                .withValues(alpha: 0.5),
                           ),
                     ),
                   ),
@@ -48,9 +55,10 @@ class TaskSelector extends StatelessWidget {
         }
 
         return Card(
+          shape: cardShape, // bordes consistentes en las 4 esquinas [web:407]
           child: Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -107,15 +115,15 @@ class TaskSelector extends StatelessWidget {
                   const SizedBox(height: 12),
                   LinearProgressIndicator(
                     value: selectedTask.estimatedPomodoros > 0
-                        ? selectedTask.completedPomodoros /
-                            selectedTask.estimatedPomodoros
+                        ? (selectedTask.completedPomodoros /
+                            selectedTask.estimatedPomodoros)
                         : 0,
                     backgroundColor: Theme.of(context)
                         .colorScheme
                         .primary
                         .withValues(alpha: 0.2),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     '${selectedTask.completedPomodoros} de ${selectedTask.estimatedPomodoros} pomodoros',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

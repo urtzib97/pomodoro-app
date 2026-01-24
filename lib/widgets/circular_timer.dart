@@ -5,30 +5,37 @@ import '../controllers/timer_controller.dart';
 import '../core/ui_ids.dart';
 
 class CircularTimer extends StatelessWidget {
-  const CircularTimer({super.key});
+  final double diameter;
+
+  const CircularTimer({
+    super.key,
+    required this.diameter,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<TimerController>(
-      id: UiIds.ID_TIMER_PROGRESS,
-      builder: (timerController) {
-        final progress = timerController.progress;
-        final isBreak = timerController.isBreakPhase;
+    debugPrint('CircularTimer diameter=$diameter');
 
-        Color progressColor;
-        if (isBreak) {
-          progressColor =
-              timerController.currentBreakType == BreakType.longBreak
-                  ? Theme.of(context).colorScheme.tertiary
-                  : Theme.of(context).colorScheme.secondary;
-        } else {
-          progressColor = Theme.of(context).colorScheme.primary;
-        }
+    return SizedBox(
+      width: diameter,
+      height: diameter,
+      child: GetBuilder<TimerController>(
+        id: UiIds.ID_TIMER_PROGRESS,
+        builder: (timerController) {
+          final progress = timerController.progress;
+          final isBreak = timerController.isBreakPhase;
 
-        return SizedBox(
-          width: 280,
-          height: 280,
-          child: TweenAnimationBuilder<Color?>(
+          Color progressColor;
+          if (isBreak) {
+            progressColor =
+                timerController.currentBreakType == BreakType.longBreak
+                    ? Theme.of(context).colorScheme.tertiary
+                    : Theme.of(context).colorScheme.secondary;
+          } else {
+            progressColor = Theme.of(context).colorScheme.primary;
+          }
+
+          return TweenAnimationBuilder<Color?>(
             tween: ColorTween(begin: progressColor, end: progressColor),
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
@@ -38,7 +45,7 @@ class CircularTimer extends StatelessWidget {
                 children: [
                   // Background circle
                   CustomPaint(
-                    size: const Size(280, 280),
+                    size: Size(diameter, diameter),
                     painter: CircleBackgroundPainter(
                       color: Theme.of(context)
                           .colorScheme
@@ -48,7 +55,7 @@ class CircularTimer extends StatelessWidget {
                   ),
                   // Progress circle
                   CustomPaint(
-                    size: const Size(280, 280),
+                    size: Size(diameter, diameter),
                     painter: CircleProgressPainter(
                       progress: progress,
                       color: animatedColor ?? progressColor,
@@ -60,16 +67,22 @@ class CircularTimer extends StatelessWidget {
                     children: [
                       GetBuilder<TimerController>(
                         id: UiIds.ID_TIMER_TEXT,
-                        builder: (controller) => Text(
-                          controller.formattedTime,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(
-                            fontSize: 64,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: -2,
-                            fontFeatures: [const FontFeature.tabularFigures()],
+                        builder: (controller) => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            controller.formattedTime,
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(
+                              // Scale font relative to size
+                              fontSize: diameter * 0.28,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -2,
+                              fontFeatures: [
+                                const FontFeature.tabularFigures()
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -78,9 +91,9 @@ class CircularTimer extends StatelessWidget {
                 ],
               );
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -95,11 +108,11 @@ class CircleBackgroundPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
+      ..strokeWidth = 20
       ..strokeCap = StrokeCap.round;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 12) / 2;
+    final radius = (size.width - 20) / 2;
 
     canvas.drawCircle(center, radius, paint);
   }
@@ -119,11 +132,11 @@ class CircleProgressPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
+      ..strokeWidth = 20
       ..strokeCap = StrokeCap.round;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 12) / 2;
+    final radius = (size.width - 20) / 2;
     const startAngle = -math.pi / 2;
     final sweepAngle = 2 * math.pi * progress;
 
