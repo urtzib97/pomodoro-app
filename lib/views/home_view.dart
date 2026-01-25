@@ -246,7 +246,9 @@ class HomeView extends StatelessWidget {
 
               if (!currentTask.isCompleted) {
                 await taskController.toggleTaskCompletion(
-                    context, currentTask.id!);
+                  context,
+                  currentTask.id!,
+                );
               }
 
               timerController.remainingSeconds = 0;

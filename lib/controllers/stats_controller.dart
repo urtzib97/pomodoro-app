@@ -29,9 +29,9 @@ class StatsController extends GetxController {
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    final nextDayStart = startOfDay.add(const Duration(days: 1));
 
-    todaySessions = await _db.getSessionsByDateRange(startOfDay, endOfDay);
+    todaySessions = await _db.getSessionsByDateRange(startOfDay, nextDayStart);
   }
 
   Future<void> loadWeekStats() async {
@@ -44,10 +44,12 @@ class StatsController extends GetxController {
       startOfWeek.month,
       startOfWeek.day,
     );
+    final nextDayStart =
+        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
 
     weekSessions = await _db.getSessionsByDateRange(
       startOfWeekDay,
-      now,
+      nextDayStart,
     );
   }
 

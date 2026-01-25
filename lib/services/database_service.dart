@@ -130,13 +130,13 @@ class DatabaseService extends GetxService {
 
   Future<List<PomodoroSession>> getSessionsByDateRange(
     DateTime start,
-    DateTime end,
+    DateTime endExclusive,
   ) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'pomodoro_sessions',
-      where: 'startTime >= ? AND startTime <= ?',
-      whereArgs: [start.toIso8601String(), end.toIso8601String()],
+      where: 'startTime >= ? AND startTime < ?',
+      whereArgs: [start.toIso8601String(), endExclusive.toIso8601String()],
       orderBy: 'startTime DESC',
     );
     return List.generate(maps.length, (i) => PomodoroSession.fromMap(maps[i]));
@@ -156,7 +156,7 @@ class DatabaseService extends GetxService {
     final db = await database;
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    final nextDayStart = startOfDay.add(const Duration(days: 1));
 
     final result = await db.rawQuery(
       '''
@@ -164,9 +164,9 @@ class DatabaseService extends GetxService {
       WHERE completed = 1 
       AND type = 'work'
       AND startTime >= ? 
-      AND startTime <= ?
+      AND startTime < ?
     ''',
-      [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+      [startOfDay.toIso8601String(), nextDayStart.toIso8601String()],
     );
 
     return Sqflite.firstIntValue(result) ?? 0;
@@ -181,6 +181,8 @@ class DatabaseService extends GetxService {
       startOfWeek.month,
       startOfWeek.day,
     );
+    final endExclusive =
+        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
 
     final result = await db.rawQuery(
       '''
@@ -188,8 +190,9 @@ class DatabaseService extends GetxService {
       WHERE completed = 1 
       AND type = 'work'
       AND startTime >= ?
+      AND startTime < ?
     ''',
-      [startOfWeekDay.toIso8601String()],
+      [startOfWeekDay.toIso8601String(), endExclusive.toIso8601String()],
     );
 
     return Sqflite.firstIntValue(result) ?? 0;
