@@ -30,7 +30,6 @@ class DatabaseService extends GetxService {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Tasks table
     await db.execute('''
       CREATE TABLE tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +42,6 @@ class DatabaseService extends GetxService {
       )
     ''');
 
-    // Pomodoro sessions table
     await db.execute('''
       CREATE TABLE pomodoro_sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +56,7 @@ class DatabaseService extends GetxService {
     ''');
   }
 
-  // Task CRUD operations
+  // Task CRUD
   Future<int> insertTask(Task task) async {
     final db = await database;
     return await db.insert('tasks', task.toMap());
@@ -66,46 +64,31 @@ class DatabaseService extends GetxService {
 
   Future<List<Task>> getAllTasks() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'tasks',
-      orderBy: 'createdAt DESC',
-    );
+    final maps = await db.query('tasks', orderBy: 'createdAt DESC');
     return List.generate(maps.length, (i) => Task.fromMap(maps[i]));
   }
 
   Future<Task?> getTask(int id) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final maps = await db.query('tasks', where: 'id = ?', whereArgs: [id]);
     if (maps.isEmpty) return null;
     return Task.fromMap(maps.first);
   }
 
   Future<int> updateTask(Task task) async {
     final db = await database;
-    return await db.update(
-      'tasks',
-      task.toMap(),
-      where: 'id = ?',
-      whereArgs: [task.id],
-    );
+    return await db
+        .update('tasks', task.toMap(), where: 'id = ?', whereArgs: [task.id]);
   }
 
   Future<int> deleteTask(int id) async {
     final db = await database;
-    return await db.delete(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<Task>> getActiveTasks() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    final maps = await db.query(
       'tasks',
       where: 'isCompleted = ?',
       whereArgs: [0],
@@ -114,7 +97,7 @@ class DatabaseService extends GetxService {
     return List.generate(maps.length, (i) => Task.fromMap(maps[i]));
   }
 
-  // Pomodoro Session CRUD operations
+  // Session CRUD
   Future<int> insertSession(PomodoroSession session) async {
     final db = await database;
     return await db.insert('pomodoro_sessions', session.toMap());
@@ -122,22 +105,23 @@ class DatabaseService extends GetxService {
 
   Future<List<PomodoroSession>> getAllSessions() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'pomodoro_sessions',
-      orderBy: 'startTime DESC',
-    );
+    final maps = await db.query('pomodoro_sessions', orderBy: 'startTime DESC');
     return List.generate(maps.length, (i) => PomodoroSession.fromMap(maps[i]));
   }
 
+  /// Uses a half-open range: [startInclusive, endExclusive).
   Future<List<PomodoroSession>> getSessionsByDateRange(
-    DateTime start,
+    DateTime startInclusive,
     DateTime endExclusive,
   ) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    final maps = await db.query(
       'pomodoro_sessions',
       where: 'startTime >= ? AND startTime < ?',
-      whereArgs: [start.toIso8601String(), endExclusive.toIso8601String()],
+      whereArgs: [
+        startInclusive.toIso8601String(),
+        endExclusive.toIso8601String()
+      ],
       orderBy: 'startTime DESC',
     );
     return List.generate(maps.length, (i) => PomodoroSession.fromMap(maps[i]));
@@ -145,65 +129,21 @@ class DatabaseService extends GetxService {
 
   Future<int> updateSession(PomodoroSession session) async {
     final db = await database;
-    return await db.update(
-      'pomodoro_sessions',
-      session.toMap(),
-      where: 'id = ?',
-      whereArgs: [session.id],
-    );
+    return await db.update('pomodoro_sessions', session.toMap(),
+        where: 'id = ?', whereArgs: [session.id]);
   }
 
-  Future<int> getCompletedPomodorosToday() async {
-    final db = await database;
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final nextDayStart = startOfDay.add(const Duration(days: 1));
-
-    final result = await db.rawQuery(
-      '''
-      SELECT COUNT(*) as count FROM pomodoro_sessions
-      WHERE completed = 1 
-      AND type = 'work'
-      AND startTime >= ? 
-      AND startTime < ?
-    ''',
-      [startOfDay.toIso8601String(), nextDayStart.toIso8601String()],
-    );
-
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  Future<int> getCompletedPomodorosThisWeek() async {
-    final db = await database;
-    final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final startOfWeekDay = DateTime(
-      startOfWeek.year,
-      startOfWeek.month,
-      startOfWeek.day,
-    );
-    final endExclusive =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
-
-    final result = await db.rawQuery(
-      '''
-      SELECT COUNT(*) as count FROM pomodoro_sessions
-      WHERE completed = 1 
-      AND type = 'work'
-      AND startTime >= ?
-      AND startTime < ?
-    ''',
-      [startOfWeekDay.toIso8601String(), endExclusive.toIso8601String()],
-    );
-
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
+  /// Weekly breakdown: count completed work sessions per calendar day.
+  ///
+  /// Note: Comparing ISO-8601 timestamps stored as TEXT works lexicographically
+  /// for chronological order as long as you store timestamps consistently
+  /// (all local or all UTC, and same ISO format). [web:688]
   Future<Map<DateTime, int>> getCompletedWorkSessionsCountByDay(
-    DateTime start,
+    DateTime startInclusive,
     DateTime endExclusive,
   ) async {
     final db = await database;
+
     final result = await db.rawQuery(
       '''
       SELECT substr(startTime, 1, 10) as dayKey, COUNT(*) as count
@@ -211,32 +151,46 @@ class DatabaseService extends GetxService {
       WHERE completed = 1 AND type = 'work'
         AND startTime >= ? AND startTime < ?
       GROUP BY dayKey
-    ''',
-      [start.toIso8601String(), endExclusive.toIso8601String()],
+      ORDER BY dayKey ASC
+      ''',
+      [startInclusive.toIso8601String(), endExclusive.toIso8601String()],
     );
 
-    final Map<DateTime, int> map = {};
+    final map = <DateTime, int>{};
+
     for (final row in result) {
-      final dayKey = row['dayKey'] as String;
-      final count = row['count'] as int;
+      final dayKey = row['dayKey'] as String?;
+      if (dayKey == null || dayKey.length != 10)
+        continue; // defensive: 'YYYY-MM-DD'
+
+      final count = (row['count'] as num?)?.toInt() ?? 0;
+
       final parts = dayKey.split('-');
-      final day = DateUtils.dateOnly(
-        DateTime(
-          int.parse(parts[0]),
-          int.parse(parts[1]),
-          int.parse(parts[2]),
-        ),
-      );
+      if (parts.length != 3) continue;
+
+      final y = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      final d = int.tryParse(parts[2]);
+      if (y == null || m == null || d == null) continue;
+
+      final day = DateUtils.dateOnly(DateTime(y, m, d));
       map[day] = count;
     }
+
     return map;
   }
 
+  /// Aggregated stats for work sessions in [startInclusive, endExclusive).
+  /// Returns:
+  /// - totalCount: total work sessions (completed + not completed)
+  /// - completedCount: completed work sessions
+  /// - totalMinutes: sum(duration) for completed work sessions
   Future<Map<String, int>> getWorkSessionStatsByRange(
-    DateTime start,
+    DateTime startInclusive,
     DateTime endExclusive,
   ) async {
     final db = await database;
+
     final result = await db.rawQuery(
       '''
       SELECT 
@@ -246,22 +200,15 @@ class DatabaseService extends GetxService {
       FROM pomodoro_sessions
       WHERE type = 'work'
         AND startTime >= ? AND startTime < ?
-    ''',
-      [start.toIso8601String(), endExclusive.toIso8601String()],
+      ''',
+      [startInclusive.toIso8601String(), endExclusive.toIso8601String()],
     );
 
-    if (result.isEmpty) {
-      return {
-        'totalCount': 0,
-        'completedCount': 0,
-        'totalMinutes': 0,
-      };
-    }
+    final row = result.isNotEmpty ? result.first : const <String, Object?>{};
 
-    final row = result.first;
     return {
-      'totalCount': row['totalCount'] as int? ?? 0,
-      'completedCount': row['completedCount'] as int? ?? 0,
+      'totalCount': (row['totalCount'] as num?)?.toInt() ?? 0,
+      'completedCount': (row['completedCount'] as num?)?.toInt() ?? 0,
       'totalMinutes': (row['totalMinutes'] as num?)?.toInt() ?? 0,
     };
   }
