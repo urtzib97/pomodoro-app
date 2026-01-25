@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/ui_ids.dart';
 import '../models/pomodoro_session.dart';
@@ -10,6 +11,7 @@ class StatsController extends GetxController {
   int weekPomodoros = 0;
   List<PomodoroSession> todaySessions = [];
   List<PomodoroSession> weekSessions = [];
+  Map<DateTime, int> weekDailyCountsByDate = {};
   String selectedPeriod = 'today'; // 'today' or 'week'
 
   @override
@@ -39,15 +41,15 @@ class StatsController extends GetxController {
 
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final startOfWeekDay = DateTime(
-      startOfWeek.year,
-      startOfWeek.month,
-      startOfWeek.day,
-    );
-    final nextDayStart =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final startOfWeekDay = DateUtils.dateOnly(startOfWeek);
+    final nextDayStart = DateUtils.dateOnly(now).add(const Duration(days: 1));
 
     weekSessions = await _db.getSessionsByDateRange(
+      startOfWeekDay,
+      nextDayStart,
+    );
+
+    weekDailyCountsByDate = await _db.getCompletedWorkSessionsCountByDay(
       startOfWeekDay,
       nextDayStart,
     );
@@ -94,18 +96,13 @@ class StatsController extends GetxController {
 
     final Map<String, int> breakdown = {};
     final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeekDay = DateUtils.dateOnly(startOfWeek);
 
     for (int i = 0; i < 7; i++) {
-      final day = now.subtract(Duration(days: now.weekday - 1 - i));
-      final dayKey = _formatDay(day);
-      breakdown[dayKey] = 0;
-    }
-
-    for (final session in weekSessions) {
-      if (session.completed && session.type == 'work') {
-        final dayKey = _formatDay(session.startTime);
-        breakdown[dayKey] = (breakdown[dayKey] ?? 0) + 1;
-      }
+      final day = DateUtils.dateOnly(startOfWeekDay.add(Duration(days: i)));
+      final label = _formatDay(day);
+      breakdown[label] = weekDailyCountsByDate[day] ?? 0;
     }
 
     return breakdown;

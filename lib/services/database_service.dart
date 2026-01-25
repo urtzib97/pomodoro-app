@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -196,5 +197,38 @@ class DatabaseService extends GetxService {
     );
 
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<Map<DateTime, int>> getCompletedWorkSessionsCountByDay(
+    DateTime start,
+    DateTime endExclusive,
+  ) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      '''
+      SELECT substr(startTime, 1, 10) as dayKey, COUNT(*) as count
+      FROM pomodoro_sessions
+      WHERE completed = 1 AND type = 'work'
+        AND startTime >= ? AND startTime < ?
+      GROUP BY dayKey
+    ''',
+      [start.toIso8601String(), endExclusive.toIso8601String()],
+    );
+
+    final Map<DateTime, int> map = {};
+    for (final row in result) {
+      final dayKey = row['dayKey'] as String;
+      final count = row['count'] as int;
+      final parts = dayKey.split('-');
+      final day = DateUtils.dateOnly(
+        DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        ),
+      );
+      map[day] = count;
+    }
+    return map;
   }
 }
