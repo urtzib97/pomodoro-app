@@ -231,4 +231,38 @@ class DatabaseService extends GetxService {
     }
     return map;
   }
+
+  Future<Map<String, int>> getWorkSessionStatsByRange(
+    DateTime start,
+    DateTime endExclusive,
+  ) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      '''
+      SELECT 
+        COUNT(*) as totalCount,
+        SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completedCount,
+        SUM(CASE WHEN completed = 1 THEN duration ELSE 0 END) as totalMinutes
+      FROM pomodoro_sessions
+      WHERE type = 'work'
+        AND startTime >= ? AND startTime < ?
+    ''',
+      [start.toIso8601String(), endExclusive.toIso8601String()],
+    );
+
+    if (result.isEmpty) {
+      return {
+        'totalCount': 0,
+        'completedCount': 0,
+        'totalMinutes': 0,
+      };
+    }
+
+    final row = result.first;
+    return {
+      'totalCount': row['totalCount'] as int? ?? 0,
+      'completedCount': row['completedCount'] as int? ?? 0,
+      'totalMinutes': (row['totalMinutes'] as num?)?.toInt() ?? 0,
+    };
+  }
 }

@@ -124,61 +124,72 @@ class StatsView extends StatelessWidget {
                     },
                   ),
 
-                  // Session History
-                  Text(
-                    'Historial',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-
+                  // Session History (only for today view)
                   GetBuilder<StatsController>(
                     id: UiIds.ID_STATS_SUMMARY,
                     builder: (controller) {
-                      final sessions = controller.workSessions;
-
-                      if (sessions.isEmpty) {
-                        return Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Center(
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.history,
-                                    size: 48,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.3),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'No hay sesiones registradas',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.5),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
+                      if (controller.selectedPeriod == 'week') {
+                        return const SizedBox.shrink();
                       }
 
+                      final sessions = controller.workSessions;
+
                       return Column(
-                        children: sessions
-                            .map(
-                              (session) => _buildSessionCard(context, session),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Historial',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 12),
+                          if (sessions.isEmpty)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.history,
+                                        size: 48,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.3),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'No hay sesiones registradas hoy',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             )
-                            .toList(),
+                          else
+                            Column(
+                              children: sessions
+                                  .map(
+                                    (session) =>
+                                        _buildSessionCard(context, session),
+                                  )
+                                  .toList(),
+                            ),
+                        ],
                       );
                     },
                   ),

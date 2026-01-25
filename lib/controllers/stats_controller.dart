@@ -8,9 +8,12 @@ class StatsController extends GetxController {
   final DatabaseService _db = Get.find<DatabaseService>();
 
   int todayPomodoros = 0;
+  int todayTotalWorkSessions = 0;
+  int todayWorkMinutes = 0;
   int weekPomodoros = 0;
+  int weekTotalWorkSessions = 0;
+  int weekWorkMinutes = 0;
   List<PomodoroSession> todaySessions = [];
-  List<PomodoroSession> weekSessions = [];
   Map<DateTime, int> weekDailyCountsByDate = {};
   String selectedPeriod = 'today'; // 'today' or 'week'
 
@@ -27,27 +30,32 @@ class StatsController extends GetxController {
   }
 
   Future<void> loadTodayStats() async {
-    todayPomodoros = await _db.getCompletedPomodorosToday();
-
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final nextDayStart = startOfDay.add(const Duration(days: 1));
+
+    final stats =
+        await _db.getWorkSessionStatsByRange(startOfDay, nextDayStart);
+    todayPomodoros = stats['completedCount'] ?? 0;
+    todayTotalWorkSessions = stats['totalCount'] ?? 0;
+    todayWorkMinutes = stats['totalMinutes'] ?? 0;
 
     todaySessions = await _db.getSessionsByDateRange(startOfDay, nextDayStart);
   }
 
   Future<void> loadWeekStats() async {
-    weekPomodoros = await _db.getCompletedPomodorosThisWeek();
-
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final startOfWeekDay = DateUtils.dateOnly(startOfWeek);
     final nextDayStart = DateUtils.dateOnly(now).add(const Duration(days: 1));
 
-    weekSessions = await _db.getSessionsByDateRange(
+    final stats = await _db.getWorkSessionStatsByRange(
       startOfWeekDay,
       nextDayStart,
     );
+    weekPomodoros = stats['completedCount'] ?? 0;
+    weekTotalWorkSessions = stats['totalCount'] ?? 0;
+    weekWorkMinutes = stats['totalMinutes'] ?? 0;
 
     weekDailyCountsByDate = await _db.getCompletedWorkSessionsCountByDay(
       startOfWeekDay,
@@ -61,33 +69,31 @@ class StatsController extends GetxController {
     update([UiIds.ID_STATS_SUMMARY, UiIds.ID_STATS_CHART]);
   }
 
-  List<PomodoroSession> get currentSessions {
-    return selectedPeriod == 'today' ? todaySessions : weekSessions;
-  }
-
   int get currentPomodoros {
     return selectedPeriod == 'today' ? todayPomodoros : weekPomodoros;
   }
 
   int get totalMinutes {
-    final sessions =
-        currentSessions.where((s) => s.completed && s.type == 'work');
-    return sessions.fold(0, (sum, session) => sum + session.duration);
+    return selectedPeriod == 'today' ? todayWorkMinutes : weekWorkMinutes;
   }
 
   double get completionRate {
-    final total = currentSessions.where((s) => s.type == 'work').length;
+    final total = selectedPeriod == 'today'
+        ? todayTotalWorkSessions
+        : weekTotalWorkSessions;
     if (total == 0) return 0.0;
 
     final completed =
-        currentSessions.where((s) => s.completed && s.type == 'work').length;
+        selectedPeriod == 'today' ? todayPomodoros : weekPomodoros;
     return (completed / total) * 100;
   }
 
   String get completionRateFormula {
-    final total = currentSessions.where((s) => s.type == 'work').length;
+    final total = selectedPeriod == 'today'
+        ? todayTotalWorkSessions
+        : weekTotalWorkSessions;
     final completed =
-        currentSessions.where((s) => s.completed && s.type == 'work').length;
+        selectedPeriod == 'today' ? todayPomodoros : weekPomodoros;
     return '$completed / $total sesiones';
   }
 
@@ -114,8 +120,7 @@ class StatsController extends GetxController {
   }
 
   List<PomodoroSession> get workSessions {
-    return currentSessions
-        .where((s) => s.type == 'work' && s.completed)
-        .toList();
+    if (selectedPeriod == 'week') return [];
+    return todaySessions.where((s) => s.type == 'work' && s.completed).toList();
   }
 }
